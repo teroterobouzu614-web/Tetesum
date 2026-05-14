@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>合計エリア・ナンプレ</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202d;
+      --muted: #667080;
+      --line: #fff;
+      --bad: #cf233d;
+      --good: #247553;
+      --size: 6;
+      --cell: min(10.4vw, calc((100dvh - 178px) / (var(--size) + 1)), 66px);
+      --target: min(9vw, calc((100dvh - 178px) / (var(--size) + 2)), 54px);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      color: var(--ink);
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at 16% 12%, rgba(255, 95, 125, .28), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(80, 205, 236, .3), transparent 26%),
+        radial-gradient(circle at 50% 88%, rgba(255, 215, 83, .34), transparent 30%),
+        linear-gradient(135deg, rgba(255,255,255,.78), rgba(255,255,255,.24)),
+        #f3eee5;
+    }
+
+    button {
+      min-height: 40px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.78);
+      color: var(--ink);
+      font: inherit;
+      font-weight: 850;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(23, 32, 45, .08);
+    }
+
+    .screen {
+      display: none;
+      width: min(1080px, calc(100% - 20px));
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: 16px 0;
+    }
+
+    .screen.active { display: grid; }
+
+    .title-screen {
+      place-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .title-screen::before,
+    .title-screen::after {
+      content: "";
+      position: absolute;
+      width: min(42vw, 320px);
+      aspect-ratio: 1;
+      border: 18px solid rgba(255,255,255,.55);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .title-screen::before { left: -90px; top: 9%; background: rgba(255, 213, 86, .25); }
+    .title-screen::after { right: -80px; bottom: 8%; background: rgba(71, 199, 227, .22); }
+
+    .title-box {
+      width: min(680px, 100%);
+      border: 5px solid var(--line);
+      border-radius: 24px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.58)),
+        repeating-linear-gradient(-12deg, rgba(255, 208, 78, .18) 0 16px, rgba(255, 118, 145, .14) 16px 32px, rgba(84, 202, 232, .15) 32px 48px);
+      padding: clamp(28px, 7vw, 60px);
+      box-shadow: 0 24px 0 rgba(255,255,255,.38), 0 28px 70px rgba(23, 32, 45, .16);
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      margin: 0;
+      color: #ff4968;
+      font-size: clamp(2.3rem, 8vw, 5.6rem);
+      line-height: .96;
+      letter-spacing: 0;
+      text-shadow: 3px 3px 0 #fff, 6px 6px 0 #55cde9, 0 12px 24px rgba(23,32,45,.12);
+    }
+
+    .lead {
+      margin: 14px auto 24px;
+      max-width: 520px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-weight: 720;
+    }
+
+    .primary {
+      min-width: 184px;
+      min-height: 50px;
+      border-color: #fff;
+      background: linear-gradient(180deg, #fff7b8, #ffcf43 55%, #f5a921);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,.72), inset 0 -4px 0 rgba(163,95,12,.18), 0 10px 0 rgba(218,128,23,.22), 0 20px 36px rgba(23,32,45,.16);
+      color: #4c2c00;
+      font-size: 1.08rem;
+    }
+
+    .stage-screen {
+      align-content: start;
+      gap: 14px;
+      overflow: auto;
+    }
+
+    .screen-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .screen-head h2 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      letter-spacing: 0;
+    }
+
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding-bottom: 16px;
+    }
+
+    .stage-card {
+      aspect-ratio: 1;
+      min-height: 0;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      isolation: isolate;
+      background: rgba(255,255,255,.72);
+    }
+
+    .stage-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -2;
+      background: var(--card-image);
+      background-size: cover;
+      background-position: center;
+      opacity: .62;
+    }
+
+    .stage-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.84));
+    }
+
+    .stage-card span {
+      color: var(--muted);
+      font-size: .86rem;
+      font-weight: 850;
+    }
+
+    .stage-card strong {
+      display: block;
+      color: #ff4968;
+      font-size: clamp(1.7rem, 6vw, 3rem);
+      line-height: 1;
+      text-shadow: 2px 2px 0 #fff, 4px 4px 0 #55cde9;
+    }
+
+    .stage-card .check {
+      position: absolute;
+      right: 8px;
+      top: 8px;
+      width: 30px;
+      height: 30px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      display: none;
+      place-items: center;
+      background: #25b65a;
+      color: #fff;
+      font-size: 1.05rem;
+      box-shadow: 0 4px 12px rgba(23,32,45,.18);
+    }
+
+    .stage-card.completed .check {
+      display: grid;
+    }
+
+    .game-screen {
+      height: 100dvh;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .status {
+      min-height: 42px;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.68);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 850;
+    }
+
+    .status span { color: var(--muted); }
+    .hearts { color: var(--bad); letter-spacing: 2px; }
+
+    .tools {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr auto;
+      gap: 8px;
+      order: 4;
+    }
+
+    .tool {
+      min-height: 56px;
+      border-width: 3px;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      text-shadow: 0 1px 0 rgba(255,255,255,.45);
+    }
+
+    #confirmTool {
+      color: #fff;
+      background: linear-gradient(180deg, #ff8797 0%, #f3485d 55%, #be2034 100%);
+      box-shadow: inset 0 4px 0 rgba(255,255,255,.36), inset 0 -5px 0 rgba(104,0,18,.22), 0 8px 0 rgba(149, 24, 42, .26), 0 14px 26px rgba(23,32,45,.14);
+      text-shadow: 0 2px 0 rgba(90,0,16,.28);
+    }
+
+    #eraseTool {
+      color: #063c4d;
+      background: linear-gradient(180deg, #b8f6ff 0%, #5bd4ed 55%, #22a9cc 100%);
+      box-shadow: inset 0 4px 0 rgba(255,255,255,.58), inset 0 -5px 0 rgba(0,72,103,.18), 0 8px 0 rgba(20,124,150,.26), 0 14px 26px rgba(23,32,45,.14);
+    }
+
+    .tool.active {
+      outline: 4px solid rgba(255,255,255,.9);
+      transform: translateY(2px);
+      filter: saturate(1.12) contrast(1.04);
+    }
+
+    #backToStages {
+      min-height: 46px;
+      align-self: center;
+      padding: 0 12px;
+    }
+
+    .board-wrap {
+      min-height: 0;
+      display: block;
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.45);
+      padding: 8px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      touch-action: pan-x pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: var(--target) repeat(var(--size), var(--cell));
+      grid-template-rows: repeat(var(--size), var(--cell)) var(--target);
+      gap: 0;
+      position: relative;
+      isolation: isolate;
+      width: max-content;
+      margin: 0 auto;
+    }
+
+    .picture {
+      grid-column: 2 / span var(--size);
+      grid-row: 1 / span var(--size);
+      z-index: 0;
+      border: 2px solid var(--line);
+      background: var(--puzzle-image);
+      background-size: cover;
+      background-position: center;
+    }
+
+    .target, .cell {
+      position: relative;
+      z-index: 1;
+      border: 2px solid var(--line);
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .target {
+      background: rgba(255,255,255,.9);
+      color: var(--muted);
+      padding: 2px;
+      line-height: 1.1;
+      font-size: .68rem;
+      font-weight: 900;
+    }
+
+    .target strong {
+      display: block;
+      color: var(--ink);
+      font-size: .86rem;
+    }
+
+    .target.ok { color: var(--good); }
+    .target.over { color: var(--bad); }
+
+    .cell {
+      color: rgba(23, 32, 45, .78);
+      font-size: clamp(.78rem, calc(34vw / var(--size)), 1.9rem);
+      font-weight: 950;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: opacity .22s ease, transform .12s ease;
+    }
+
+    .cell.confirmed {
+      color: #d71935;
+      text-shadow: 0 2px 0 rgba(255,255,255,.75), 0 0 10px rgba(255,255,255,.35);
+      box-shadow: inset 0 0 0 4px rgba(255,255,255,.58), inset 0 0 0 999px rgba(255,255,255,.1);
+    }
+
+    .cell.erased {
+      color: rgba(23,32,45,.2);
+    }
+
+    .cell.revealed {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(.92);
+    }
+
+    .cell.miss {
+      animation: miss .32s ease, redGlow .62s ease;
+      border-color: var(--bad);
+      box-shadow: 0 0 0 4px rgba(207,35,61,.28), 0 0 24px rgba(207,35,61,.95), inset 0 0 0 4px rgba(255,255,255,.48);
+    }
+
+    @keyframes miss {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-5px); }
+      70% { transform: translateX(5px); }
+    }
+
+    @keyframes redGlow {
+      0%, 100% { filter: saturate(1); }
+      45% { filter: saturate(1.8) brightness(1.18); }
+    }
+
+    .screen-shake {
+      animation: screenShake .28s ease;
+    }
+
+    @keyframes screenShake {
+      0%, 100% { transform: translate3d(0,0,0); }
+      18% { transform: translate3d(-3px,2px,0); }
+      36% { transform: translate3d(4px,-2px,0); }
+      54% { transform: translate3d(-2px,-1px,0); }
+      72% { transform: translate3d(2px,1px,0); }
+    }
+
+    .region-sum {
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      z-index: 2;
+      min-width: 24px;
+      padding: 2px 4px;
+      border: 2px solid var(--line);
+      border-radius: 6px;
+      background: rgba(255,255,255,.9);
+      color: #182231;
+      font-size: clamp(.42rem, calc(9vw / var(--size)), .62rem);
+      font-weight: 950;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .message {
+      min-height: 40px;
+      border: 2px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.68);
+      padding: 8px 10px;
+      color: var(--muted);
+      font-weight: 800;
+      line-height: 1.35;
+      order: 3;
+    }
+
+    .message.warn { color: var(--bad); }
+    .message.win { color: var(--good); }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      z-index: 20;
+      padding: 20px;
+      background: rgba(23, 32, 45, .34);
+    }
+
+    .modal.active { display: grid; }
+
+    .modal-box {
+      width: min(420px, 100%);
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.96);
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 20px 70px rgba(23,32,45,.22);
+    }
+
+    .modal-box h2 { margin: 0 0 8px; font-size: 2rem; }
+    .modal-box p { margin: 0 0 18px; color: var(--muted); font-weight: 750; }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .clear-box {
+      width: min(560px, 100%);
+    }
+
+    .clear-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 3px solid var(--line);
+      border-radius: 14px;
+      margin: 10px 0 14px;
+      background: var(--clear-image);
+      background-size: cover;
+      background-position: center;
+      box-shadow: inset 0 0 0 4px rgba(255,255,255,.25);
+    }
+
+    .gallery-box {
+      width: min(920px, 100%);
+      max-height: min(86dvh, 760px);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .gallery-grid {
+      min-height: 180px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 6px;
+    }
+
+    .gallery-item {
+      aspect-ratio: 1;
+      border: 3px solid var(--line);
+      border-radius: 12px;
+      background: var(--gallery-image);
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gallery-item span {
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      min-width: 32px;
+      padding: 4px 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.85);
+      color: #ff4968;
+      font-weight: 950;
+      box-shadow: 0 4px 12px rgba(23,32,45,.14);
+    }
+
+    .gallery-empty {
+      display: grid;
+      place-items: center;
+      min-height: 180px;
+      color: var(--muted);
+      font-weight: 850;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .balloon-img {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      top: 50%;
+      width: min(46vw, 230px);
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      animation: balloonPop 1.05s ease-out forwards;
+      filter: drop-shadow(0 12px 16px rgba(23,32,45,.2));
+    }
+
+    @keyframes balloonPop {
+      0% { opacity: 0; transform: translate(-50%, -35%) scale(.45) rotate(-8deg); }
+      18% { opacity: 1; transform: translate(-50%, -58%) scale(1.1) rotate(4deg); }
+      72% { opacity: 1; transform: translate(-50%, -92%) scale(1) rotate(-2deg); }
+      100% { opacity: 0; transform: translate(-50%, -122%) scale(.92) rotate(3deg); }
+    }
+
+    .fail-balloon {
+      width: min(76vw, 300px);
+      margin: -8px auto 10px;
+      display: block;
+      filter: drop-shadow(0 12px 16px rgba(23,32,45,.18));
+    }
+
+    @media (max-width: 720px) {
+      :root {
+        --cell: min(12.7vw, calc((100dvh - 166px) / (var(--size) + 1)), 54px);
+        --target: min(10.2vw, calc((100dvh - 166px) / (var(--size) + 2)), 42px);
+      }
+
+      .screen { width: calc(100% - 12px); padding: 8px 0; }
+      .title-box { padding: 28px 18px; }
+      .screen-head { display: grid; align-items: start; }
+      .screen-head .lead { margin: 8px 0 0; }
+      .stage-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .stage-card { min-height: 0; }
+      .gallery-grid { grid-template-columns: 1fr 1fr; }
+      .game-screen { gap: 6px; }
+      .status {
+        min-height: 38px;
+        padding: 6px 8px;
+        font-size: .88rem;
+        position: sticky;
+        top: 0;
+        z-index: 6;
+      }
+      .tools {
+        gap: 7px;
+        position: sticky;
+        bottom: 0;
+        z-index: 8;
+        padding-top: 3px;
+        background: linear-gradient(180deg, rgba(243,238,229,0), rgba(243,238,229,.96) 30%);
+      }
+      button { min-height: 36px; }
+      .tool { min-height: 58px; font-size: 1.12rem; }
+      .board-wrap { padding: 5px; border-radius: 10px; }
+      .target { font-size: .54rem; }
+      .target strong { font-size: .68rem; }
+      .region-sum { left: 2px; top: 2px; min-width: 20px; padding: 1px 3px; border-width: 1px; }
+      .message { min-height: 36px; padding: 6px 8px; font-size: .84rem; }
+    }
+  </style>
+</head>
+<body>
+  <main id="titleScreen" class="screen title-screen active">
+    <section class="title-box">
+      <h1>合計エリア<br>ナンプレ</h1>
+      <p class="lead">確定か消すを選んで数字をタップ。行、列、色エリアの合計をそろえる21ステージパズル。</p>
+      <button id="startButton" class="primary" type="button">スタート</button>
+      <button id="galleryButton" type="button">ギャラリー</button>
+    </section>
+  </main>
+
+  <main id="stageScreen" class="screen stage-screen">
+    <header class="screen-head">
+      <div>
+        <h2>ステージ選択</h2>
+        <p class="lead">6×6から10×10まで。最後におまけの20×20があります。</p>
+      </div>
+      <button id="stageBackButton" type="button">タイトルへ</button>
+    </header>
+    <section id="stageGrid" class="stage-grid" aria-label="ステージ一覧"></section>
+  </main>
+
+  <main id="gameScreen" class="screen game-screen">
+    <header class="status">
+      <div><span>ステージ</span> <strong id="stageLabel">1 / 21</strong></div>
+      <div><span>サイズ</span> <strong id="sizeLabel">6×6</strong></div>
+      <div><span>ライフ</span> <strong id="lifeLabel" class="hearts">♥♥♥</strong></div>
+      <div><span>操作</span> <strong id="toolLabel">確定</strong></div>
+    </header>
+    <section class="board-wrap" aria-label="パズル盤面">
+      <div id="board" class="board"></div>
+    </section>
+    <div id="message" class="message">確定か消すを選んで、マスの数字をタップしてください。</div>
+    <section class="tools" aria-label="操作">
+      <button id="confirmTool" class="tool active" type="button">確定</button>
+      <button id="eraseTool" class="tool" type="button">消す</button>
+      <button id="backToStages" type="button">ステージ</button>
+    </section>
+  </main>
+
+  <div id="gameOverModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+    <div class="modal-box">
+      <img id="failBalloon" class="fail-balloon" alt="失敗..." />
+      <h2 id="gameOverTitle">ゲームオーバー</h2>
+      <p>ライフがなくなりました。タイトルに戻ってやり直せます。</p>
+      <div class="modal-actions">
+        <button id="retryButton" type="button">もう一度</button>
+        <button id="returnTitleButton" class="primary" type="button">タイトルに戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="clearModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+    <div class="modal-box clear-box">
+      <h2 id="clearTitle">ステージクリア！</h2>
+      <div id="clearImage" class="clear-image" aria-label="完成画像"></div>
+      <div class="modal-actions">
+        <button id="nextStageButton" class="primary" type="button">次のステージへ</button>
+        <button id="clearTitleButton" type="button">タイトルへ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="galleryModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="galleryTitle">
+    <div class="modal-box gallery-box">
+      <h2 id="galleryTitle">ギャラリー</h2>
+      <div id="galleryGrid" class="gallery-grid"></div>
+      <button id="closeGalleryButton" class="primary" type="button">閉じる</button>
+    </div>
+  </div>
+
+  <script>
+    const palette = ["#f1c75d", "#7cc5b7", "#f29c84", "#a8ca74", "#b9a4df", "#8dbde8", "#efc0cf", "#d9b172", "#9bd4a3", "#f4a7a7", "#93c5fd", "#f8d66d", "#c4b5fd", "#67e8f9", "#f0abfc", "#bef264", "#fdba74", "#a7f3d0", "#fda4af", "#bfdbfe", "#ddd6fe", "#fde68a", "#99f6e4", "#fbcfe8", "#c7d2fe"];
+    const sceneSets = [
+      ["朝の庭", "#a7d8ff", "#78b46d", "#7d513e", "#f3b2a4", "#f7d35f", "watering"],
+      ["港の夕暮れ", "#f6a66f", "#3d7890", "#30435b", "#d86e72", "#f2ca78", "wind"],
+      ["森の灯", "#1c4b4d", "#3b7354", "#334132", "#8fc48d", "#f1d87b", "leaves"],
+      ["雪の街", "#d8edff", "#8aaac4", "#485b74", "#e8edf4", "#7fa6c4", "snow"],
+      ["星の塔", "#13213c", "#8b6b8f", "#33284f", "#f1c45e", "#df8fb1", "books"],
+      ["虹の空", "#87c8ff", "#80bd78", "#6b4a3b", "#f5a6be", "#72b6e6", "balloons"]
+    ];
+    const sizes = [6,6,7,7,8,8,9,9,10,10,6,7,8,9,10,6,7,8,9,10,20];
+
+    const stages = sizes.map((size, index) => makeStage(size, index));
+
+    const state = {
+      stageIndex: 0,
+      size: 6,
+      regionCount: 8,
+      values: [],
+      solution: [],
+      selected: [],
+      decided: [],
+      regions: [],
+      rowTargets: [],
+      colTargets: [],
+      regionTargets: [],
+      revealedRegions: [],
+      tool: "confirm",
+      lives: 3,
+      won: false
+    };
+
+    const titleScreen = document.getElementById("titleScreen");
+    const stageScreen = document.getElementById("stageScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const stageGrid = document.getElementById("stageGrid");
+    const boardEl = document.getElementById("board");
+    const stageLabel = document.getElementById("stageLabel");
+    const sizeLabel = document.getElementById("sizeLabel");
+    const lifeLabel = document.getElementById("lifeLabel");
+    const toolLabel = document.getElementById("toolLabel");
+    const messageEl = document.getElementById("message");
+    const confirmTool = document.getElementById("confirmTool");
+    const eraseTool = document.getElementById("eraseTool");
+    const gameOverModal = document.getElementById("gameOverModal");
+    const failBalloon = document.getElementById("failBalloon");
+    const clearModal = document.getElementById("clearModal");
+    const clearImage = document.getElementById("clearImage");
+    const nextStageButton = document.getElementById("nextStageButton");
+    const galleryModal = document.getElementById("galleryModal");
+    const galleryGrid = document.getElementById("galleryGrid");
+    const storageKey = "sumAreaPuzzleCompletedStages";
+    const completedStages = loadCompletedStages();
+    const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
+    const praiseBalloonSrcs = praiseWords.map((word, index) =>
+      makeBalloonImage(word, ["#22a9cc", "#ff5272", "#7c3aed", "#f59e0b", "#16a34a", "#e11d48"][index], "#fff4a8", "#55cde9")
+    );
+    const failBalloonSrc = makeBalloonImage("失敗...", "#6b7280", "#f1f5f9", "#cf233d");
+    failBalloon.src = failBalloonSrc;
+
+    function makeStage(size, index) {
+      const scene = sceneSets[index % sceneSets.length];
+      const regions = makeRegions(size, index + 11);
+      const values = makeValues(size, index + 3);
+      const solution = makeSolution(size, regions, index + 5);
+      return {
+        name: `${scene[0]} ${size}×${size}`,
+        displayName: index === 20 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
+        size,
+        regions,
+        regionCount: Math.max(...regions.flat()) + 1,
+        values,
+        solution,
+        scene: scene.slice(1, 6),
+        mishap: scene[6]
+      };
+    }
+
+    function makeRegions(size, seed) {
+      const regionCount = Math.max(1, Math.floor((size * size) / (size === 20 ? 16 : 7)));
+      const regions = Array.from({ length: size }, () => Array(size).fill(-1));
+      const seeds = [];
+
+      for (let id = 0; id < regionCount; id++) {
+        let best = null;
+        for (let attempt = 0; attempt < size * size; attempt++) {
+          const r = (seed * 7 + id * 11 + attempt * 3) % size;
+          const c = (seed * 5 + id * 13 + attempt * 4) % size;
+          if (regions[r][c] !== -1) continue;
+          const score = seeds.reduce((min, point) => Math.min(min, Math.abs(point.r - r) + Math.abs(point.c - c)), Infinity);
+          if (!best || score > best.score) best = { r, c, score };
+        }
+        if (!best) break;
+        regions[best.r][best.c] = id;
+        seeds.push(best);
+      }
+
+      let remaining = size * size - seeds.length;
+      while (remaining > 0) {
+        let changed = false;
+        for (let id = 0; id < seeds.length && remaining > 0; id++) {
+          const frontier = [];
+          for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+              if (regions[r][c] !== id) continue;
+              for (const [nr, nc] of neighbors(r, c, size)) {
+                if (regions[nr][nc] === -1) frontier.push([nr, nc]);
+              }
+            }
+          }
+          if (!frontier.length) continue;
+          frontier.sort((a, b) => regionNoise(a[0], a[1], id, seed) - regionNoise(b[0], b[1], id, seed));
+          const [r, c] = frontier[0];
+          regions[r][c] = id;
+          remaining--;
+          changed = true;
+        }
+        if (!changed) break;
+      }
+
+      mergeSmallRegions(regions, seeds.length, size);
+      return renumberRegions(regions, size);
+    }
+
+    function neighbors(r, c, size) {
+      return [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].filter(([nr, nc]) => nr >= 0 && nr < size && nc >= 0 && nc < size);
+    }
+
+    function regionNoise(r, c, id, seed) {
+      return Math.sin((r + 1) * 12.9898 + (c + 1) * 78.233 + (id + seed) * 37.719);
+    }
+
+    function mergeSmallRegions(regions, regionCount, size) {
+      let changed = true;
+      while (changed) {
+        changed = false;
+        const counts = countRegions(regions, regionCount, size);
+        for (let id = 0; id < regionCount; id++) {
+          if (!counts[id] || counts[id] >= 5) continue;
+          const target = largestNeighborRegion(regions, id, size);
+          if (target === null) continue;
+          for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+              if (regions[r][c] === id) regions[r][c] = target;
+            }
+          }
+          changed = true;
+        }
+      }
+    }
+
+    function countRegions(regions, regionCount, size) {
+      const counts = Array(regionCount).fill(0);
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) counts[regions[r][c]]++;
+      }
+      return counts;
+    }
+
+    function largestNeighborRegion(regions, id, size) {
+      const seen = new Map();
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (regions[r][c] !== id) continue;
+          for (const [nr, nc] of neighbors(r, c, size)) {
+            const other = regions[nr][nc];
+            if (other !== id) seen.set(other, (seen.get(other) || 0) + 1);
+          }
+        }
+      }
+      let best = null;
+      let bestCount = -1;
+      seen.forEach((count, other) => {
+        if (count > bestCount) {
+          best = other;
+          bestCount = count;
+        }
+      });
+      return best;
+    }
+
+    function renumberRegions(regions, size) {
+      const map = new Map();
+      let next = 0;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          const id = regions[r][c];
+          if (!map.has(id)) map.set(id, next++);
+          regions[r][c] = map.get(id);
+        }
+      }
+      return regions;
+    }
+
+    function makeValues(size, seed) {
+      return Array.from({ length: size }, (_, r) =>
+        Array.from({ length: size }, (_, c) => ((r * 3 + c * 5 + seed * 2 + (r * c) % 7) % 9) + 1)
+      );
+    }
+
+    function makeSolution(size, regions, seed) {
+      const solution = Array.from({ length: size }, (_, r) =>
+        Array.from({ length: size }, (_, c) => ((r * 2 + c * 3 + seed + (r + c) % 2) % 4) < 2)
+      );
+      for (let r = 0; r < size; r++) {
+        if (!solution[r].some(Boolean)) solution[r][(r + seed) % size] = true;
+      }
+      for (let c = 0; c < size; c++) {
+        if (!solution.some(row => row[c])) solution[(c + seed) % size][c] = true;
+      }
+      const regionCount = Math.max(...regions.flat()) + 1;
+      for (let id = 0; id < regionCount; id++) {
+        const cells = [];
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) if (regions[r][c] === id) cells.push([r, c]);
+        }
+        if (!cells.some(([r, c]) => solution[r][c])) {
+          const [r, c] = cells[(id + seed) % cells.length];
+          solution[r][c] = true;
+        }
+      }
+      return solution;
+    }
+
+    function svgUrl(svg) {
+      return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    }
+
+    function svgData(svg) {
+      return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    }
+
+    function makeBalloonImage(text, main, fill, shadow) {
+      return svgData(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220">
+          <path d="M46 34h284c34 0 62 28 62 62v20c0 34-28 62-62 62H182l-54 36 10-36H46c-34 0-62-28-62-62V96c0-34 28-62 62-62z" transform="translate(14 -10)" fill="${shadow}" opacity=".28"/>
+          <path d="M48 28h284c34 0 62 28 62 62v20c0 34-28 62-62 62H184l-58 38 12-38H48c-34 0-62-28-62-62V90c0-34 28-62 62-62z" transform="translate(14 0)" fill="${fill}" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>
+          <path d="M48 28h284c34 0 62 28 62 62v20c0 34-28 62-62 62H184l-58 38 12-38H48c-34 0-62-28-62-62V90c0-34 28-62 62-62z" transform="translate(14 0)" fill="none" stroke="${main}" stroke-width="7" stroke-linejoin="round"/>
+          <text x="210" y="122" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, sans-serif" font-size="62" font-weight="900" fill="${main}" stroke="#fff" stroke-width="7" paint-order="stroke">${text}</text>
+          <circle cx="82" cy="60" r="10" fill="#fff" opacity=".72"/>
+          <circle cx="112" cy="52" r="6" fill="#fff" opacity=".72"/>
+        </svg>
+      `);
+    }
+
+    function makeCardImage(stage) {
+      const [sky, ground, , , accent] = stage.scene;
+      return svgUrl(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${sky}"/><stop offset="1" stop-color="${ground}"/></linearGradient></defs>
+          <rect width="720" height="420" fill="url(#g)"/>
+          <circle cx="600" cy="76" r="46" fill="${accent}" opacity=".78"/>
+          <path d="M0 268l112-108 82 78 118-126 118 132 78-78 212 142v112H0z" fill="#ffffff" opacity=".28"/>
+          <path d="M0 290l112-96 82 70 118-116 118 120 78-72 212 132v92H0z" fill="${ground}" opacity=".58"/>
+          <path d="M0 318c110-56 210-48 322-12 130 42 250 24 398-50v164H0z" fill="${ground}" opacity=".78"/>
+          <path d="M88 250c28-42 56-42 84 0 30-56 70-56 102 0" fill="none" stroke="#fff" stroke-width="12" opacity=".62"/>
+          <circle cx="150" cy="334" r="18" fill="${accent}" opacity=".78"/>
+          <circle cx="482" cy="328" r="22" fill="#fff" opacity=".34"/>
+        </svg>
+      `);
+    }
+
+    function makePuzzleImage(stage) {
+      const [sky, ground, , outfit, accent] = stage.scene;
+      const extras = {
+        watering: `<path d="M120 236c88-42 168-32 242 20 80 56 170 56 250 5" fill="none" stroke="#fff" stroke-width="18" opacity=".5"/><path d="M448 178c50 18 83 50 98 94" fill="none" stroke="#6fb9e8" stroke-width="18" stroke-linecap="round"/><circle cx="562" cy="304" r="16" fill="#6fb9e8"/><circle cx="604" cy="324" r="12" fill="#6fb9e8"/>`,
+        wind: `<path d="M80 190c96-42 150 34 245-1 64-23 116-58 220-14" fill="none" stroke="#fff" stroke-width="17" opacity=".7"/><path d="M496 146l90 34-74 52z" fill="#fff7cf" opacity=".86"/>`,
+        leaves: `<circle cx="580" cy="120" r="54" fill="${accent}" opacity=".65"/><path d="M110 120c60 120 84 210 58 300M600 108c-62 130-78 224-38 314" stroke="#20372b" stroke-width="28" opacity=".46"/><path d="M210 145l36 18-32 24zM522 230l42 10-26 32zM150 284l38 16-29 24z" fill="${accent}"/>`,
+        snow: `<path d="M0 316c120-40 238-34 354 0 116 34 222 28 366-30v154H0z" fill="#f8fbff"/><circle cx="150" cy="82" r="8" fill="#fff"/><circle cx="532" cy="126" r="11" fill="#fff"/><circle cx="430" cy="70" r="7" fill="#fff"/><path d="M110 286V166l76-62 76 62v120zM440 294V150l86-70 86 70v144z" fill="#6c8298" opacity=".72"/>`,
+        books: `<path d="M300 80V420h118V80z" fill="#222a45" opacity=".75"/><path d="M284 132h150M284 212h150M284 292h150" stroke="${accent}" stroke-width="14"/><rect x="90" y="274" width="88" height="30" fill="${outfit}" transform="rotate(-14 90 274)"/><rect x="126" y="228" width="92" height="30" fill="${accent}" transform="rotate(18 126 228)"/>`,
+        balloons: `<path d="M32 260c110-170 260-218 430-142 70 32 136 72 220 48" fill="none" stroke="#e95c70" stroke-width="24"/><path d="M46 294c116-132 254-162 410-82 68 34 128 54 218 28" fill="none" stroke="#ffd560" stroke-width="24"/><circle cx="570" cy="88" r="32" fill="${accent}"/><circle cx="626" cy="128" r="28" fill="${outfit}"/><path d="M570 120c-14 54-60 84-128 96M626 156c-10 38-44 70-100 95" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/>`
+      };
+      return svgUrl(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${sky}"/><stop offset=".62" stop-color="#f6df9a"/><stop offset="1" stop-color="${ground}"/></linearGradient></defs>
+          <rect width="720" height="720" fill="url(#g)"/>
+          ${extras[stage.mishap]}
+          <path d="M0 500c90-82 168-120 248-112 80 8 132 62 220 55 82-7 142-66 252-118v395H0z" fill="${ground}" opacity=".62"/>
+          <path d="M64 510c92-50 176-48 268 4 104 58 214 56 324-8" fill="none" stroke="#fff" stroke-width="18" opacity=".45"/>
+          <path d="M86 438l52-86 52 86zM172 454l68-118 72 118zM512 440l58-94 62 94z" fill="#20372b" opacity=".54"/>
+          <circle cx="148" cy="578" r="28" fill="${accent}" opacity=".72"/>
+          <circle cx="520" cy="592" r="34" fill="${outfit}" opacity=".55"/>
+        </svg>
+      `);
+    }
+
+    function cloneGrid(grid) {
+      return grid.map(row => row.slice());
+    }
+
+    function emptyGrid(size, fill = false) {
+      return Array.from({ length: size }, () => Array(size).fill(fill));
+    }
+
+    function showScreen(name) {
+      titleScreen.classList.toggle("active", name === "title");
+      stageScreen.classList.toggle("active", name === "stage");
+      gameScreen.classList.toggle("active", name === "game");
+    }
+
+    function getRegionCells(id) {
+      const cells = [];
+      for (let r = 0; r < state.size; r++) {
+        for (let c = 0; c < state.size; c++) {
+          if (state.regions[r][c] === id) cells.push([r, c]);
+        }
+      }
+      return cells;
+    }
+
+    function computeTargets() {
+      state.rowTargets = state.solution.map((row, r) =>
+        row.reduce((sum, on, c) => sum + (on ? state.values[r][c] : 0), 0)
+      );
+      state.colTargets = Array.from({ length: state.size }, (_, c) =>
+        state.solution.reduce((sum, row, r) => sum + (row[c] ? state.values[r][c] : 0), 0)
+      );
+      state.regionTargets = Array.from({ length: state.regionCount }, (_, id) =>
+        getRegionCells(id).reduce((sum, [r, c]) => sum + (state.solution[r][c] ? state.values[r][c] : 0), 0)
+      );
+    }
+
+    function getRowSum(r) {
+      return state.selected[r].reduce((sum, on, c) => sum + (on ? state.values[r][c] : 0), 0);
+    }
+
+    function getColSum(c) {
+      return state.selected.reduce((sum, row, r) => sum + (row[c] ? state.values[r][c] : 0), 0);
+    }
+
+    function getRegionSum(id) {
+      return getRegionCells(id).reduce((sum, [r, c]) => sum + (state.selected[r][c] ? state.values[r][c] : 0), 0);
+    }
+
+    function targetClass(current, target) {
+      if (current === target) return "ok";
+      if (current > target) return "over";
+      return "";
+    }
+
+    function regionIsComplete(id) {
+      return getRegionCells(id).every(([r, c]) => state.decided[r][c] && state.selected[r][c] === state.solution[r][c]);
+    }
+
+    function updateRevealedRegions() {
+      const opened = [];
+      for (let id = 0; id < state.regionCount; id++) {
+        if (!state.revealedRegions[id] && getRegionSum(id) === state.regionTargets[id] && regionIsComplete(id)) {
+          state.revealedRegions[id] = true;
+          opened.push(id);
+        }
+      }
+      return opened;
+    }
+
+    function startStage(index) {
+      const stage = stages[index];
+      state.stageIndex = index;
+      state.size = stage.size;
+      state.regionCount = stage.regionCount;
+      state.values = cloneGrid(stage.values);
+      state.solution = stage.solution.map(row => row.map(Boolean));
+      state.selected = emptyGrid(stage.size, false);
+      state.decided = emptyGrid(stage.size, false);
+      state.regions = cloneGrid(stage.regions);
+      state.revealedRegions = Array(stage.regionCount).fill(false);
+      state.tool = "confirm";
+      state.lives = 3;
+      state.won = false;
+      computeTargets();
+      boardEl.style.setProperty("--puzzle-image", makePuzzleImage(stage));
+      boardEl.style.setProperty("--size", stage.size);
+      setTool("confirm");
+      showScreen("game");
+      render();
+      setMessage(`ステージ${index + 1}「${stage.displayName}」。${stage.size}×${stage.size}です。`, "");
+    }
+
+    function render() {
+      updateRevealedRegions();
+      boardEl.innerHTML = '<div class="picture" aria-hidden="true"></div>';
+
+      for (let r = 0; r < state.size; r++) {
+        const rowSum = getRowSum(r);
+        const rowTarget = state.rowTargets[r];
+        const rowTargetEl = document.createElement("div");
+        rowTargetEl.className = `target ${targetClass(rowSum, rowTarget)}`;
+        rowTargetEl.style.gridColumn = "1";
+        rowTargetEl.style.gridRow = String(r + 1);
+        rowTargetEl.innerHTML = `<span>行</span><strong>${rowSum}/${rowTarget}</strong>`;
+        boardEl.append(rowTargetEl);
+
+        for (let c = 0; c < state.size; c++) {
+          const regionId = state.regions[r][c];
+          const cell = document.createElement("button");
+          const stateClass = state.decided[r][c] ? (state.selected[r][c] ? "confirmed" : "erased") : "";
+          cell.type = "button";
+          cell.className = `cell ${stateClass} ${state.revealedRegions[regionId] ? "revealed" : ""}`;
+          cell.style.gridColumn = String(c + 2);
+          cell.style.gridRow = String(r + 1);
+          cell.style.background = palette[regionId % palette.length];
+          cell.textContent = state.revealedRegions[regionId] ? "" : (state.decided[r][c] && !state.selected[r][c] ? "×" : state.values[r][c]);
+          cell.addEventListener("pointerup", event => {
+            event.preventDefault();
+            tapCell(r, c, cell);
+          });
+          boardEl.append(cell);
+        }
+      }
+
+      for (let c = 0; c < state.size; c++) {
+        const colSum = getColSum(c);
+        const colTarget = state.colTargets[c];
+        const colTargetEl = document.createElement("div");
+        colTargetEl.className = `target ${targetClass(colSum, colTarget)}`;
+        colTargetEl.style.gridColumn = String(c + 2);
+        colTargetEl.style.gridRow = String(state.size + 1);
+        colTargetEl.innerHTML = `<span>列</span><strong>${colSum}/${colTarget}</strong>`;
+        boardEl.append(colTargetEl);
+      }
+
+      renderRegionSums();
+      updateStatus();
+      if (isSolved() && !state.won) winStage();
+    }
+
+    function renderRegionSums() {
+      for (let id = 0; id < state.regionCount; id++) {
+        if (state.revealedRegions[id]) continue;
+        const cells = getRegionCells(id);
+        const topLeft = cells.reduce((best, cell) => {
+          if (!best || cell[0] < best[0] || (cell[0] === best[0] && cell[1] < best[1])) return cell;
+          return best;
+        }, null);
+        const label = document.createElement("div");
+        label.className = "region-sum";
+        label.style.gridColumn = String(topLeft[1] + 2);
+        label.style.gridRow = String(topLeft[0] + 1);
+        label.textContent = `${getRegionSum(id)}/${state.regionTargets[id]}`;
+        boardEl.append(label);
+      }
+    }
+
+    function tapCell(r, c, element) {
+      const regionId = state.regions[r][c];
+      if (state.won || state.revealedRegions[regionId] || state.decided[r][c]) return;
+      const wantsConfirm = state.tool === "confirm";
+      const correct = wantsConfirm === state.solution[r][c];
+      if (!correct) {
+        state.lives -= 1;
+        element.classList.add("miss");
+        shakeScreen();
+        setTimeout(() => element.classList.remove("miss"), 360);
+        updateStatus();
+        if (state.lives <= 0) gameOver();
+        else setMessage(`ミス。ライフが残り${state.lives}です。`, "warn");
+        return;
+      }
+
+      state.decided[r][c] = true;
+      state.selected[r][c] = wantsConfirm;
+      const openedBefore = state.revealedRegions.filter(Boolean).length;
+      render();
+      const opened = state.revealedRegions.filter(Boolean).length;
+      if (opened > openedBefore) showPraiseBalloon(opened);
+      setMessage(`正解。完成エリア ${opened} / ${state.regionCount}。`, "");
+    }
+
+    function isSolved() {
+      return state.rowTargets.every((target, r) => getRowSum(r) === target)
+        && state.colTargets.every((target, c) => getColSum(c) === target)
+        && state.regionTargets.every((target, id) => getRegionSum(id) === target)
+        && state.decided.flat().every(Boolean);
+    }
+
+    function winStage() {
+      state.won = true;
+      markStageCompleted(state.stageIndex);
+      state.revealedRegions = Array(state.regionCount).fill(true);
+      render();
+      const last = state.stageIndex === stages.length - 1;
+      setMessage(last ? "全21ステージクリア！" : "ステージクリア。ステージ選択から次へ進めます。", "win");
+      showClearModal(last);
+    }
+
+    function showClearModal(last) {
+      const stage = stages[state.stageIndex];
+      clearImage.style.setProperty("--clear-image", makePuzzleImage(stage));
+      nextStageButton.textContent = last ? "ステージ選択へ" : "次のステージへ";
+      clearModal.classList.add("active");
+    }
+
+    function gameOver() {
+      shakeScreen();
+      gameOverModal.classList.add("active");
+    }
+
+    function shakeScreen() {
+      gameScreen.classList.remove("screen-shake");
+      void gameScreen.offsetWidth;
+      gameScreen.classList.add("screen-shake");
+    }
+
+    function showPraiseBalloon(opened) {
+      const index = Math.min(praiseBalloonSrcs.length - 1, Math.floor((opened - 1) / Math.max(1, state.regionCount / praiseBalloonSrcs.length)));
+      const img = document.createElement("img");
+      img.src = praiseBalloonSrcs[index];
+      img.alt = praiseWords[index];
+      img.className = "balloon-img";
+      document.body.append(img);
+      setTimeout(() => img.remove(), 1150);
+    }
+
+    function updateStatus() {
+      stageLabel.textContent = `${state.stageIndex + 1} / ${stages.length}`;
+      sizeLabel.textContent = `${state.size}×${state.size}`;
+      lifeLabel.textContent = "♥".repeat(Math.max(0, state.lives)) + "♡".repeat(Math.max(0, 3 - state.lives));
+      toolLabel.textContent = state.tool === "confirm" ? "確定" : "消す";
+    }
+
+    function setTool(tool) {
+      state.tool = tool;
+      confirmTool.classList.toggle("active", tool === "confirm");
+      eraseTool.classList.toggle("active", tool === "erase");
+      updateStatus();
+    }
+
+    function setMessage(text, mode) {
+      messageEl.textContent = text;
+      messageEl.className = `message ${mode || ""}`;
+    }
+
+    function loadCompletedStages() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return new Set(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        return new Set();
+      }
+    }
+
+    function saveCompletedStages() {
+      localStorage.setItem(storageKey, JSON.stringify([...completedStages].sort((a, b) => a - b)));
+    }
+
+    function markStageCompleted(index) {
+      if (completedStages.has(index)) return;
+      completedStages.add(index);
+      saveCompletedStages();
+      renderStageCards();
+    }
+
+    function renderGallery() {
+      galleryGrid.innerHTML = "";
+      const unlocked = [...completedStages].sort((a, b) => a - b);
+      if (!unlocked.length) {
+        galleryGrid.innerHTML = '<div class="gallery-empty">まだ画像が解放されていません。<br>ステージをクリアするとここに並びます。</div>';
+        return;
+      }
+      unlocked.forEach(index => {
+        const stage = stages[index];
+        if (!stage) return;
+        const item = document.createElement("div");
+        item.className = "gallery-item";
+        item.style.setProperty("--gallery-image", makePuzzleImage(stage));
+        item.innerHTML = `<span>${index + 1}</span>`;
+        galleryGrid.append(item);
+      });
+    }
+
+    function renderStageCards() {
+      stageGrid.innerHTML = "";
+      stages.forEach((stage, index) => {
+        const button = document.createElement("button");
+        button.className = `stage-card ${completedStages.has(index) ? "completed" : ""}`;
+        button.type = "button";
+        button.style.setProperty("--card-image", makeCardImage(stage));
+        button.innerHTML = `<strong>${index + 1}</strong><span class="check">✓</span>`;
+        button.title = `${stage.displayName} / ${stage.size}×${stage.size}`;
+        button.addEventListener("click", () => startStage(index));
+        stageGrid.append(button);
+      });
+    }
+
+    document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
+    document.getElementById("stageBackButton").addEventListener("click", () => showScreen("title"));
+    document.getElementById("galleryButton").addEventListener("click", () => {
+      renderGallery();
+      galleryModal.classList.add("active");
+    });
+    document.getElementById("closeGalleryButton").addEventListener("click", () => {
+      galleryModal.classList.remove("active");
+    });
+    document.getElementById("backToStages").addEventListener("click", () => showScreen("stage"));
+    document.getElementById("returnTitleButton").addEventListener("click", () => {
+      gameOverModal.classList.remove("active");
+      showScreen("title");
+    });
+    document.getElementById("clearTitleButton").addEventListener("click", () => {
+      clearModal.classList.remove("active");
+      showScreen("title");
+    });
+    nextStageButton.addEventListener("click", () => {
+      clearModal.classList.remove("active");
+      if (state.stageIndex >= stages.length - 1) showScreen("stage");
+      else startStage(state.stageIndex + 1);
+    });
+    document.getElementById("retryButton").addEventListener("click", () => {
+      gameOverModal.classList.remove("active");
+      startStage(state.stageIndex);
+    });
+    confirmTool.addEventListener("click", () => setTool("confirm"));
+    eraseTool.addEventListener("click", () => setTool("erase"));
+
+    renderStageCards();
+  </script>
+</body>
+</html>
