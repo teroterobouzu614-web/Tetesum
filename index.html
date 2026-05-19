@@ -132,6 +132,36 @@
       animation: titleFlash 5.2s ease-in-out infinite;
     }
 
+    .photo-flow {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+      opacity: .42;
+    }
+
+    .photo-flow img {
+      position: absolute;
+      width: clamp(86px, 16vw, 180px);
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+      border: 3px solid rgba(255,255,255,.8);
+      border-radius: 12px;
+      opacity: .28;
+      filter: saturate(1.08) brightness(1.08);
+      box-shadow: 0 18px 34px rgba(23,32,45,.12);
+      animation: photoDrift 18s linear infinite;
+    }
+
+    .photo-flow img:nth-child(1) { left: -16%; top: 8%; animation-delay: -1s; }
+    .photo-flow img:nth-child(2) { left: 12%; bottom: -24%; animation-delay: -6s; }
+    .photo-flow img:nth-child(3) { left: 38%; top: -26%; animation-delay: -11s; }
+    .photo-flow img:nth-child(4) { right: -14%; top: 22%; animation-delay: -4s; }
+    .photo-flow img:nth-child(5) { right: 20%; bottom: -25%; animation-delay: -14s; }
+    .photo-flow img:nth-child(6) { left: 64%; top: 62%; animation-delay: -9s; }
+    .photo-flow img:nth-child(7) { left: -12%; bottom: 18%; animation-delay: -16s; }
+
     .title-box {
       width: min(780px, 94vw);
       padding: clamp(34px, 8vw, 72px) 18px;
@@ -318,6 +348,11 @@
       86% { opacity: 0; transform: translateX(65%); }
     }
 
+    @keyframes photoDrift {
+      from { transform: translate3d(-18vw, 12px, 0) rotate(-8deg); }
+      to { transform: translate3d(118vw, -18px, 0) rotate(8deg); }
+    }
+
     @keyframes titleOrb {
       from { transform: translate3d(0,0,0) scale(1); }
       to { transform: translate3d(24px,-18px,0) scale(1.08); }
@@ -376,6 +411,17 @@
         radial-gradient(circle at 72% 28%, rgba(255,255,255,.62) 0 34px, transparent 38px);
       opacity: .82;
       animation: stageFloat 7s ease-in-out infinite alternate;
+    }
+
+    .stage-screen .photo-flow {
+      opacity: .32;
+    }
+
+    .stage-screen .photo-flow img {
+      width: clamp(76px, 13vw, 150px);
+      opacity: .2;
+      border-radius: 10px;
+      animation-duration: 24s;
     }
 
     .screen-head {
@@ -1067,6 +1113,15 @@
 <body>
   <main id="titleScreen" class="screen title-screen active">
     <div class="title-motion" aria-hidden="true">
+      <div class="photo-flow">
+        <img src="assets/tetesum/22.jpg" alt="" />
+        <img src="assets/tetesum/23.jpg" alt="" />
+        <img src="assets/tetesum/24.jpg" alt="" />
+        <img src="assets/tetesum/25.jpg" alt="" />
+        <img src="assets/tetesum/26.jpg" alt="" />
+        <img src="assets/tetesum/27.jpg" alt="" />
+        <img src="assets/tetesum/28.jpg" alt="" />
+      </div>
       <div class="title-ribbon one"></div>
       <div class="title-ribbon two"></div>
       <div class="title-tile a"></div>
@@ -1088,6 +1143,15 @@
   </main>
 
   <main id="stageScreen" class="screen stage-screen">
+    <div class="photo-flow" aria-hidden="true">
+      <img src="assets/tetesum/22.jpg" alt="" />
+      <img src="assets/tetesum/23.jpg" alt="" />
+      <img src="assets/tetesum/24.jpg" alt="" />
+      <img src="assets/tetesum/25.jpg" alt="" />
+      <img src="assets/tetesum/26.jpg" alt="" />
+      <img src="assets/tetesum/27.jpg" alt="" />
+      <img src="assets/tetesum/28.jpg" alt="" />
+    </div>
     <header class="screen-head">
       <div>
         <h2>ステージ選択</h2>
@@ -1458,13 +1522,14 @@
         "assets/tetesum/11.jpg",
         "assets/tetesum/12.jpg",
         "assets/tetesum/13.jpg",
+        "assets/tetesum/14.jpg",
+        "assets/tetesum/15.jpg",
         "assets/tetesum/16.jpg",
         "assets/tetesum/17.jpg",
         "assets/tetesum/18.jpg",
         "assets/tetesum/19.jpg",
         "assets/tetesum/20.jpg",
-        "assets/tetesum/21.jpg",
-        "assets/tetesum/111.jpg"
+        "assets/tetesum/21.jpg"
       ];
       return `url("${catImages[(stage.imageIndex || 0) % catImages.length]}")`;
 
