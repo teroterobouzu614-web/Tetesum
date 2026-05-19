@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>緊縛エリアナンプレ</title>
   <style>
     :root {
@@ -13,7 +13,7 @@
       --bad: #cf233d;
       --good: #247553;
       --size: 6;
-      --cell: min(8.2vw, calc((100dvh - 176px) / (var(--size) + 1)), 36px);
+      --cell: 40px;
       --target: calc(var(--cell) * .92);
     }
 
@@ -24,10 +24,11 @@
       min-height: 100vh;
       min-height: 100dvh;
       overflow-x: hidden;
-      overflow-y: auto;
+      overflow-y: hidden;
       color: var(--ink);
       font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       background: #fff;
+      touch-action: manipulation;
     }
 
     button {
@@ -657,10 +658,12 @@
       border-radius: 0;
       background: #fff;
       padding: 0;
-      overflow: visible;
+      overflow: auto;
       overscroll-behavior: contain;
       touch-action: pan-x pan-y;
       -webkit-overflow-scrolling: touch;
+      width: 100%;
+      height: 100%;
     }
 
     .board {
@@ -1027,11 +1030,6 @@
     }
 
     @media (max-width: 720px) {
-      :root {
-        --cell: min(calc((100vw - 94px) / var(--size)), calc((100dvh - 174px) / (var(--size) + 1)), 32px);
-        --target: calc(var(--cell) * .92);
-      }
-
       .screen { width: 100%; padding: 8px 0; }
       .title-box { width: 100%; padding: 44px 10px; }
       h1 { font-size: clamp(2.6rem, 13vw, 4.8rem); }
@@ -1087,8 +1085,8 @@
       button { min-height: 36px; }
       .tool { width: min(42vw, 150px); height: 52px; min-height: 52px; font-size: 1.05rem; }
       .board-wrap {
-        overflow: visible;
-        touch-action: manipulation;
+        overflow: auto;
+        touch-action: pan-x pan-y;
         padding: 0;
         border-radius: 0;
       }
@@ -1702,11 +1700,33 @@
       boardEl.style.setProperty("--size", stage.size);
       setTool("confirm");
       showScreen("game");
+      fitBoard();
       render();
       setMessage("", "");
     }
 
+    function fitBoard() {
+      if (!state.size) return;
+      const viewport = window.visualViewport || window;
+      const width = viewport.width || window.innerWidth;
+      const height = viewport.height || window.innerHeight;
+      const topSpace = 48;
+      const bottomSpace = 64;
+      const verticalGaps = 24;
+      const usableWidth = Math.max(240, width - 20);
+      const usableHeight = Math.max(240, height - topSpace - bottomSpace - verticalGaps);
+      const tracks = state.size + .92;
+      const fitCell = Math.floor(Math.min(usableWidth / tracks, usableHeight / tracks));
+      const preferredCell = state.size >= 20 ? 30 : state.size >= 10 ? 44 : state.size >= 8 ? 50 : 58;
+      const minCell = state.size >= 20 ? 22 : 30;
+      const cell = Math.max(minCell, Math.min(preferredCell, fitCell));
+      document.documentElement.style.setProperty("--cell", `${cell}px`);
+      document.documentElement.style.setProperty("--target", `${Math.round(cell * .92)}px`);
+      boardEl.style.setProperty("--size", state.size);
+    }
+
     function render() {
+      fitBoard();
       updateRevealedRegions();
       boardEl.innerHTML = '<div class="picture" aria-hidden="true"></div>';
 
@@ -2010,6 +2030,12 @@
     lifeLabel.addEventListener("pointerleave", cancelForceClearHold);
     lifeLabel.addEventListener("pointercancel", cancelForceClearHold);
     lifeLabel.addEventListener("contextmenu", event => event.preventDefault());
+    window.addEventListener("resize", fitBoard);
+    window.addEventListener("orientationchange", fitBoard);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", fitBoard);
+      window.visualViewport.addEventListener("scroll", fitBoard);
+    }
 
     renderStageCards();
   </script>
