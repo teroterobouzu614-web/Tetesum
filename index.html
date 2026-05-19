@@ -1278,6 +1278,9 @@
     const galleryGrid = document.getElementById("galleryGrid");
     const storageKey = "sumAreaPuzzleCompletedStages";
     const completedStages = loadCompletedStages();
+    const clearCommand = ["up", "up", "down", "down", "right", "left", "right", "left", "a", "b", "a", "b"];
+    let clearCommandProgress = 0;
+    let swipeStart = null;
     const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
     const praiseBalloonSrcs = praiseWords.map((word, index) =>
       makeBalloonImage(word, ["#22a9cc", "#ff5272", "#7c3aed", "#f59e0b", "#16a34a", "#e11d48"][index], "#fff4a8", "#55cde9")
@@ -1804,6 +1807,14 @@
       );
     }
 
+    function forceClearStage() {
+      if (!state.size || state.won) return;
+      state.selected = state.solution.map(row => row.slice());
+      state.decided = emptyGrid(state.size, true);
+      state.lives = Math.max(state.lives, 1);
+      winStage();
+    }
+
     function winStage() {
       state.won = true;
       markStageCompleted(state.stageIndex);
@@ -1885,6 +1896,40 @@
     function setMessage(text, mode) {
       messageEl.textContent = "";
       messageEl.className = "message";
+    }
+
+    function readClearCommand(input) {
+      if (clearCommand[clearCommandProgress] === input) {
+        clearCommandProgress += 1;
+      } else {
+        clearCommandProgress = clearCommand[0] === input ? 1 : 0;
+      }
+
+      if (clearCommandProgress === clearCommand.length) {
+        clearCommandProgress = 0;
+        forceClearStage();
+      }
+    }
+
+    function keyToClearCommand(event) {
+      const key = event.key.toLowerCase();
+      if (key === "arrowup") return "up";
+      if (key === "arrowdown") return "down";
+      if (key === "arrowleft") return "left";
+      if (key === "arrowright") return "right";
+      if (key === "a") return "a";
+      if (key === "b") return "b";
+      return "";
+    }
+
+    function readSwipeCommand(event) {
+      if (!swipeStart) return;
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - swipeStart.x;
+      const dy = touch.clientY - swipeStart.y;
+      swipeStart = null;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 34) return;
+      readClearCommand(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
     }
 
     function loadCompletedStages() {
@@ -1975,8 +2020,23 @@
       gameOverModal.classList.remove("active");
       startStage(state.stageIndex);
     });
-    confirmTool.addEventListener("click", () => setTool("confirm"));
-    eraseTool.addEventListener("click", () => setTool("erase"));
+    confirmTool.addEventListener("click", () => {
+      readClearCommand("a");
+      setTool("confirm");
+    });
+    eraseTool.addEventListener("click", () => {
+      readClearCommand("b");
+      setTool("erase");
+    });
+    document.addEventListener("keydown", event => {
+      const input = keyToClearCommand(event);
+      if (input) readClearCommand(input);
+    });
+    gameScreen.addEventListener("touchstart", event => {
+      const touch = event.changedTouches[0];
+      swipeStart = { x: touch.clientX, y: touch.clientY };
+    }, { passive: true });
+    gameScreen.addEventListener("touchend", readSwipeCommand, { passive: true });
 
     renderStageCards();
   </script>
