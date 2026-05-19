@@ -958,6 +958,7 @@
       overflow: auto;
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-auto-rows: var(--gallery-cell, 160px);
       align-content: start;
       gap: 10px;
       padding: 6px;
@@ -966,9 +967,10 @@
     }
 
     .gallery-item {
-      aspect-ratio: 1;
       min-width: 0;
       min-height: 0;
+      width: 100%;
+      height: var(--gallery-cell, 160px);
       border: 3px solid var(--line);
       border-radius: 12px;
       background: #f4f6fb;
@@ -1065,6 +1067,7 @@
       }
       .gallery-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-auto-rows: var(--gallery-cell, 150px);
         gap: 8px;
         padding: 4px;
       }
@@ -1993,6 +1996,15 @@
         item.append(img, label);
         galleryGrid.append(item);
       });
+      fitGallery();
+    }
+
+    function fitGallery() {
+      if (!galleryModal.classList.contains("active")) return;
+      const firstItem = galleryGrid.querySelector(".gallery-item");
+      if (!firstItem) return;
+      const width = Math.floor(firstItem.getBoundingClientRect().width);
+      if (width > 0) galleryGrid.style.setProperty("--gallery-cell", `${width}px`);
     }
 
     function renderStageCards() {
@@ -2013,6 +2025,7 @@
     document.getElementById("galleryButton").addEventListener("click", () => {
       renderGallery();
       galleryModal.classList.add("active");
+      requestAnimationFrame(fitGallery);
     });
     document.getElementById("closeGalleryButton").addEventListener("click", () => {
       galleryModal.classList.remove("active");
@@ -2054,9 +2067,12 @@
     lifeLabel.addEventListener("contextmenu", event => event.preventDefault());
     window.addEventListener("resize", fitBoard);
     window.addEventListener("orientationchange", fitBoard);
+    window.addEventListener("resize", fitGallery);
+    window.addEventListener("orientationchange", fitGallery);
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", fitBoard);
       window.visualViewport.addEventListener("scroll", fitBoard);
+      window.visualViewport.addEventListener("resize", fitGallery);
     }
 
     updateAmbientImage();
