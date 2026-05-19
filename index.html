@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>合計エリア・ナンプレ</title>
+  <title>Tetesum</title>
   <style>
     :root {
       color-scheme: light;
@@ -13,8 +13,8 @@
       --bad: #cf233d;
       --good: #247553;
       --size: 6;
-      --cell: min(10.4vw, calc((100dvh - 178px) / (var(--size) + 1)), 66px);
-      --target: min(9vw, calc((100dvh - 178px) / (var(--size) + 2)), 54px);
+      --cell: min(8.2vw, calc((100dvh - 176px) / (var(--size) + 1)), 36px);
+      --target: calc(var(--cell) * .92);
     }
 
     * { box-sizing: border-box; }
@@ -27,24 +27,19 @@
       overflow-y: auto;
       color: var(--ink);
       font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:
-        radial-gradient(circle at 16% 12%, rgba(255, 95, 125, .28), transparent 24%),
-        radial-gradient(circle at 82% 18%, rgba(80, 205, 236, .3), transparent 26%),
-        radial-gradient(circle at 50% 88%, rgba(255, 215, 83, .34), transparent 30%),
-        linear-gradient(135deg, rgba(255,255,255,.78), rgba(255,255,255,.24)),
-        #f3eee5;
+      background: #fff;
     }
 
     button {
       min-height: 40px;
-      border: 2px solid var(--line);
+      border: 0;
       border-radius: 8px;
-      background: rgba(255,255,255,.78);
+      background: #eef2f8;
       color: var(--ink);
       font: inherit;
       font-weight: 850;
       cursor: pointer;
-      box-shadow: 0 10px 24px rgba(23, 32, 45, .08);
+      box-shadow: none;
     }
 
     .screen {
@@ -62,6 +57,9 @@
       text-align: center;
       position: relative;
       overflow: hidden;
+      background:
+        linear-gradient(120deg, rgba(255, 246, 179, .95), rgba(255,255,255,.92) 36%, rgba(194, 241, 255, .94) 70%, rgba(255, 210, 224, .94)),
+        #fff;
     }
 
     .title-screen::before,
@@ -73,31 +71,200 @@
       border: 18px solid rgba(255,255,255,.55);
       border-radius: 50%;
       pointer-events: none;
+      animation: titleOrb 7.5s ease-in-out infinite alternate;
     }
 
-    .title-screen::before { left: -90px; top: 9%; background: rgba(255, 213, 86, .25); }
-    .title-screen::after { right: -80px; bottom: 8%; background: rgba(71, 199, 227, .22); }
+    .title-screen::before { left: -90px; top: 9%; background: rgba(255, 213, 86, .32); }
+    .title-screen::after { right: -80px; bottom: 8%; background: rgba(71, 199, 227, .28); animation-delay: -2.2s; }
+
+    .title-motion {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .title-ribbon {
+      position: absolute;
+      left: -18vw;
+      width: 136vw;
+      height: clamp(54px, 11vw, 122px);
+      border-block: 4px solid rgba(255,255,255,.72);
+      opacity: .78;
+      transform: skewY(-8deg);
+      filter: drop-shadow(0 14px 18px rgba(23,32,45,.10));
+      animation: ribbonSweep 6.8s ease-in-out infinite;
+    }
+
+    .title-ribbon.one {
+      top: 12%;
+      background: linear-gradient(90deg, transparent, rgba(255,73,104,.72), rgba(255,216,86,.76), transparent);
+    }
+
+    .title-ribbon.two {
+      bottom: 13%;
+      background: linear-gradient(90deg, transparent, rgba(71,199,227,.70), rgba(126,100,232,.58), transparent);
+      animation-delay: -3.1s;
+      transform: skewY(7deg);
+    }
+
+    .title-tile {
+      position: absolute;
+      width: clamp(58px, 10vw, 118px);
+      aspect-ratio: 1;
+      border: 5px solid rgba(255,255,255,.86);
+      border-radius: 18px;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,.62), 0 18px 34px rgba(23,32,45,.13);
+      opacity: .88;
+      animation: tileFloat 5.8s ease-in-out infinite;
+    }
+
+    .title-tile.a { left: 7%; top: 18%; background: linear-gradient(145deg, #ff7891, #ffd96d); }
+    .title-tile.b { right: 8%; top: 16%; background: linear-gradient(145deg, #66d6f2, #8fe98e); animation-delay: -1.8s; }
+    .title-tile.c { left: 13%; bottom: 12%; background: linear-gradient(145deg, #b9a2ff, #ffad71); animation-delay: -3.2s; }
+    .title-tile.d { right: 14%; bottom: 14%; background: linear-gradient(145deg, #ffd96d, #ff7891); animation-delay: -4.4s; }
+
+    .title-flash {
+      position: absolute;
+      inset: -18% -34%;
+      background: linear-gradient(105deg, transparent 36%, rgba(255,255,255,.75) 48%, transparent 60%);
+      transform: translateX(-65%);
+      animation: titleFlash 5.2s ease-in-out infinite;
+    }
 
     .title-box {
-      width: min(680px, 100%);
-      border: 5px solid var(--line);
-      border-radius: 24px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.58)),
-        repeating-linear-gradient(-12deg, rgba(255, 208, 78, .18) 0 16px, rgba(255, 118, 145, .14) 16px 32px, rgba(84, 202, 232, .15) 32px 48px);
-      padding: clamp(28px, 7vw, 60px);
-      box-shadow: 0 24px 0 rgba(255,255,255,.38), 0 28px 70px rgba(23, 32, 45, .16);
+      width: min(780px, 94vw);
+      padding: clamp(34px, 8vw, 72px) 18px;
       position: relative;
       z-index: 1;
+      animation: titleBoxIn .78s cubic-bezier(.18, .86, .2, 1.08) both;
+    }
+
+    .title-logo-wrap,
+    .title-logo-img {
+      display: none;
+    }
+
+    .title-wordmark {
+      position: relative;
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+      margin: 0 auto;
+    }
+
+    .title-wordmark-img {
+      display: none;
+      width: min(92vw, 760px);
+      height: auto;
+      margin: 0 auto;
+      filter: drop-shadow(0 16px 20px rgba(23,32,45,.15));
+      animation: titleHeadlineIn .72s .18s cubic-bezier(.18, .86, .2, 1.08) both;
     }
 
     h1 {
       margin: 0;
-      color: #ff4968;
-      font-size: clamp(2.3rem, 8vw, 5.6rem);
-      line-height: .96;
+      color: transparent;
+      font-size: clamp(2.9rem, 9vw, 7.2rem);
+      line-height: .88;
       letter-spacing: 0;
-      text-shadow: 3px 3px 0 #fff, 6px 6px 0 #55cde9, 0 12px 24px rgba(23,32,45,.12);
+      position: relative;
+      width: auto;
+      transform: none;
+      background: linear-gradient(105deg, #ff325f 0%, #ff7a39 34%, #15aed1 66%, #7657e8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: none;
+      filter: drop-shadow(0 10px 16px rgba(23,32,45,.16));
+      animation: titleHeadlineIn .72s .18s cubic-bezier(.18, .86, .2, 1.08) both;
+    }
+
+    .title-fallback {
+      position: relative;
+      width: auto;
+      height: auto;
+      padding: 0;
+      margin: 0;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+      border: 0;
+    }
+
+    .title-fallback::before,
+    .title-fallback::after {
+      display: none;
+    }
+
+    h1::before,
+    h1::after {
+      content: "";
+      display: block;
+      width: min(72vw, 560px);
+      height: 3px;
+      margin: 0 auto 16px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, #ff4968, #55cde9, transparent);
+      opacity: .9;
+    }
+
+    h1::after {
+      margin: 18px auto 0;
+      height: 2px;
+      opacity: .55;
+    }
+
+    .title-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+      position: relative;
+      z-index: 1;
+      animation: titleTextIn .7s .36s cubic-bezier(.18, .86, .2, 1.08) both;
+    }
+
+    .image-button {
+      width: min(40vw, 210px);
+      min-width: 150px;
+      min-height: 48px;
+      border: 2px solid rgba(255,255,255,.88);
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 44%),
+        linear-gradient(135deg, #ff4968, #ff8f3d);
+      color: #fff;
+      font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+      font-weight: 950;
+      text-shadow: 0 2px 0 rgba(71,24,40,.22);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.55), inset 0 -4px 0 rgba(23,32,45,.12), 0 10px 18px rgba(23,32,45,.14);
+      filter: none;
+      transition: transform .14s ease, filter .14s ease;
+    }
+
+    .image-button:hover {
+      transform: translateY(-2px) scale(1.02);
+      filter: saturate(1.08);
+    }
+
+    .image-button:active {
+      transform: translateY(3px) scale(.99);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.46), inset 0 -2px 0 rgba(23,32,45,.12), 0 5px 10px rgba(23,32,45,.12);
+    }
+
+    .image-button.start {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0) 44%),
+        linear-gradient(135deg, #ff4968, #ff8f3d);
+    }
+
+    .image-button.gallery {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,0) 44%),
+        linear-gradient(135deg, #1fc1e5, #6f68ec);
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(12,73,101,.28);
     }
 
     .lead {
@@ -118,10 +285,97 @@
       font-size: 1.08rem;
     }
 
+    @keyframes titleBoxIn {
+      from { opacity: 0; transform: translateY(34px) scale(.94); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes titleTextIn {
+      from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    @keyframes titleHeadlineIn {
+      from { opacity: 0; transform: translateY(18px); filter: blur(4px) drop-shadow(0 10px 16px rgba(23,32,45,.16)); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0) drop-shadow(0 10px 16px rgba(23,32,45,.16)); }
+    }
+
+    @keyframes ribbonSweep {
+      0%, 100% { opacity: .18; transform: translateX(-12%) skewY(-8deg); }
+      35%, 65% { opacity: .82; }
+      50% { transform: translateX(12%) skewY(-8deg); }
+    }
+
+    @keyframes tileFloat {
+      0%, 100% { opacity: .22; transform: translateX(-34px) translateY(18px) rotate(-8deg) scale(.9); }
+      22%, 72% { opacity: .9; }
+      50% { transform: translateX(28px) translateY(-20px) rotate(9deg) scale(1.04); }
+    }
+
+    @keyframes titleFlash {
+      0%, 62%, 100% { opacity: 0; transform: translateX(-65%); }
+      72% { opacity: .9; }
+      86% { opacity: 0; transform: translateX(65%); }
+    }
+
+    @keyframes titleOrb {
+      from { transform: translate3d(0,0,0) scale(1); }
+      to { transform: translate3d(24px,-18px,0) scale(1.08); }
+    }
+
+    @keyframes titleMeter {
+      0%, 100% { transform: translateX(-22%); opacity: .45; }
+      50% { transform: translateX(22%); opacity: .9; }
+    }
+
+    @keyframes stageSweep {
+      from { transform: translateX(-6%) translateY(0); opacity: .58; }
+      to { transform: translateX(6%) translateY(8px); opacity: .86; }
+    }
+
+    @keyframes stageFloat {
+      from { transform: translate3d(0, -8px, 0); }
+      to { transform: translate3d(0, 10px, 0); }
+    }
+
     .stage-screen {
       align-content: start;
       gap: 14px;
       overflow: auto;
+      padding-inline: 10px;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(232, 249, 255, .96) 0%, rgba(249,255,244,.98) 48%, rgba(218, 244, 203, .98) 100%),
+        radial-gradient(circle at 12% 16%, rgba(255, 223, 112, .22), transparent 24%),
+        radial-gradient(circle at 86% 18%, rgba(128, 207, 255, .18), transparent 26%),
+        radial-gradient(circle at 52% 100%, rgba(98, 190, 96, .18), transparent 32%);
+    }
+
+    .stage-screen::before,
+    .stage-screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .stage-screen::before {
+      background:
+        linear-gradient(105deg, transparent 10%, rgba(255, 255, 255, .34) 24%, transparent 42%),
+        linear-gradient(180deg, transparent 58%, rgba(111, 198, 91, .18) 59%, rgba(91, 176, 82, .16) 100%),
+        repeating-linear-gradient(96deg, transparent 0 34px, rgba(96, 172, 74, .10) 35px 39px, transparent 40px 78px);
+      transform: translateX(-6%);
+      animation: stageSweep 8s ease-in-out infinite alternate;
+    }
+
+    .stage-screen::after {
+      background:
+        radial-gradient(circle at 14% 76%, rgba(255, 219, 112, .26) 0 54px, transparent 58px),
+        radial-gradient(circle at 84% 72%, rgba(255, 151, 178, .12) 0 42px, transparent 46px),
+        radial-gradient(circle at 72% 28%, rgba(255,255,255,.62) 0 34px, transparent 38px);
+      opacity: .82;
+      animation: stageFloat 7s ease-in-out infinite alternate;
     }
 
     .screen-head {
@@ -129,82 +383,108 @@
       align-items: end;
       justify-content: space-between;
       gap: 12px;
+      position: relative;
+      z-index: 1;
     }
 
     .screen-head h2 {
       margin: 0;
       font-size: clamp(2rem, 5vw, 3.6rem);
       letter-spacing: 0;
+      color: #243044;
+      text-shadow: 0 1px 0 #fff;
+    }
+
+    #stageBackButton {
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(195,205,220,.9);
+      background: rgba(255,255,255,.82);
+      color: #445064;
+      box-shadow: 0 6px 16px rgba(23,32,45,.08), inset 0 1px 0 rgba(255,255,255,.9);
     }
 
     .stage-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      padding-bottom: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(54px, 64px));
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 0 18px;
+      position: relative;
+      z-index: 1;
     }
 
     .stage-card {
-      aspect-ratio: 1;
-      min-height: 0;
+      width: 60px;
+      height: 46px;
+      min-height: 46px;
       padding: 0;
       display: grid;
       place-items: center;
       text-align: center;
       position: relative;
       overflow: hidden;
-      border-radius: 12px;
+      border-radius: 8px;
       isolation: isolate;
-      background: rgba(255,255,255,.72);
+      border: 1px solid #c8d2e1;
+      background:
+        linear-gradient(180deg, #fff, #f3f7fc 64%, #e7eef8);
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.92),
+        inset 0 -3px 0 rgba(80,96,122,.10),
+        0 4px 10px rgba(23,32,45,.10);
+      transform: translateY(0);
+      transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
     }
 
-    .stage-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -2;
-      background: var(--card-image);
-      background-size: cover;
-      background-position: center;
-      opacity: .62;
+    .stage-card:nth-child(6n + 1) { --stage-a: #ff8ca0; --stage-b: #ff4d72; }
+    .stage-card:nth-child(6n + 2) { --stage-a: #66d6f2; --stage-b: #22aeda; }
+    .stage-card:nth-child(6n + 3) { --stage-a: #ffd96d; --stage-b: #f2aa25; --stage-ink: #563600; }
+    .stage-card:nth-child(6n + 4) { --stage-a: #8fe98e; --stage-b: #32bd63; }
+    .stage-card:nth-child(6n + 5) { --stage-a: #b9a2ff; --stage-b: #7d64e8; }
+    .stage-card:nth-child(6n) { --stage-a: #ffad71; --stage-b: #f06f37; }
+
+    .stage-card:hover {
+      border-color: #62bfe4;
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.92),
+        inset 0 -3px 0 rgba(80,96,122,.10),
+        0 5px 12px rgba(23,32,45,.12),
+        0 0 0 3px rgba(98,191,228,.12);
+      transform: translateY(-1px);
     }
 
-    .stage-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.84));
-    }
-
-    .stage-card span {
-      color: var(--muted);
-      font-size: .86rem;
-      font-weight: 850;
+    .stage-card:active {
+      transform: translateY(3px);
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.58),
+        inset 0 -2px 0 rgba(40,45,65,.18),
+        0 2px 5px rgba(17,24,39,.10);
     }
 
     .stage-card strong {
       display: block;
-      color: #ff4968;
-      font-size: clamp(1.7rem, 6vw, 3rem);
+      color: #263247;
+      font-size: 1.26rem;
       line-height: 1;
-      text-shadow: 2px 2px 0 #fff, 4px 4px 0 #55cde9;
+      text-shadow: 0 1px 0 #fff;
     }
 
     .stage-card .check {
       position: absolute;
-      right: 8px;
-      top: 8px;
-      width: 30px;
-      height: 30px;
-      border: 2px solid #fff;
+      right: 4px;
+      top: 4px;
+      width: 18px;
+      height: 18px;
+      border: 1px solid #fff;
       border-radius: 50%;
       display: none;
       place-items: center;
-      background: #25b65a;
+      background: linear-gradient(180deg, #48df89, #16a85a);
       color: #fff;
-      font-size: 1.05rem;
-      box-shadow: 0 4px 12px rgba(23,32,45,.18);
+      font-size: .72rem;
+      text-shadow: none;
+      box-shadow: 0 2px 5px rgba(17,24,39,.18), inset 0 1px 0 rgba(255,255,255,.35);
     }
 
     .stage-card.completed .check {
@@ -213,59 +493,79 @@
 
     .game-screen {
       height: 100dvh;
-      grid-template-rows: auto 1fr auto auto;
+      grid-template-rows: 48px minmax(0, 1fr) 64px;
       gap: 8px;
-      align-content: start;
+      align-content: center;
+      justify-items: center;
+      position: relative;
     }
 
     .status {
-      min-height: 42px;
-      border: 2px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,255,255,.68);
-      padding: 8px 10px;
+      min-height: 36px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: 10px;
       font-weight: 850;
+      width: 100%;
     }
 
     .status span { color: var(--muted); }
-    .hearts { color: var(--bad); letter-spacing: 2px; }
+    .status-meta,
+    #backToStages,
+    .status span {
+      display: none;
+    }
+
+    .hearts {
+      color: #ff2c55;
+      letter-spacing: 5px;
+      font-size: 1.35rem;
+      line-height: 1;
+    }
 
     .tools {
-      display: grid;
-      grid-template-columns: 1.2fr 1.2fr auto;
-      gap: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
       order: 4;
+      width: 100%;
     }
 
     .tool {
-      min-height: 56px;
-      border-width: 3px;
-      border-radius: 12px;
-      font-size: 1.15rem;
-      text-shadow: 0 1px 0 rgba(255,255,255,.45);
+      width: min(42vw, 150px);
+      height: 52px;
+      min-height: 52px;
+      border: 2px solid #fff;
+      border-radius: 10px;
+      color: inherit;
+      font-size: 1.05rem;
+      position: relative;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,.45), inset 0 -4px 0 rgba(17,24,39,.12), 0 8px 18px rgba(17,24,39,.12);
     }
 
     #confirmTool {
-      color: #fff;
       background: linear-gradient(180deg, #ff8797 0%, #f3485d 55%, #be2034 100%);
-      box-shadow: inset 0 4px 0 rgba(255,255,255,.36), inset 0 -5px 0 rgba(104,0,18,.22), 0 8px 0 rgba(149, 24, 42, .26), 0 14px 26px rgba(23,32,45,.14);
-      text-shadow: 0 2px 0 rgba(90,0,16,.28);
+      color: #fff;
+      order: 1;
     }
 
     #eraseTool {
-      color: #063c4d;
       background: linear-gradient(180deg, #b8f6ff 0%, #5bd4ed 55%, #22a9cc 100%);
-      box-shadow: inset 0 4px 0 rgba(255,255,255,.58), inset 0 -5px 0 rgba(0,72,103,.18), 0 8px 0 rgba(20,124,150,.26), 0 14px 26px rgba(23,32,45,.14);
+      color: #063c4d;
+      order: 2;
     }
 
     .tool.active {
-      outline: 4px solid rgba(255,255,255,.9);
-      transform: translateY(2px);
-      filter: saturate(1.12) contrast(1.04);
+      outline: 3px solid #1ea7ff;
+      outline-offset: 2px;
+      transform: translateY(1px);
+      filter: none;
     }
 
     #backToStages {
@@ -274,14 +574,40 @@
       padding: 0 12px;
     }
 
+    .game-exit {
+      position: absolute;
+      right: max(10px, env(safe-area-inset-right));
+      top: max(8px, env(safe-area-inset-top));
+      z-index: 9;
+      width: 40px;
+      height: 40px;
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border: 1px solid rgba(197, 207, 220, .95);
+      border-radius: 50%;
+      background: rgba(255,255,255,.88);
+      color: #445064;
+      font-size: 1.35rem;
+      line-height: 1;
+      box-shadow: 0 8px 18px rgba(23,32,45,.12), inset 0 1px 0 rgba(255,255,255,.95);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .game-exit:active {
+      transform: translateY(2px);
+      box-shadow: 0 4px 10px rgba(23,32,45,.10), inset 0 1px 0 rgba(255,255,255,.95);
+    }
+
     .board-wrap {
       min-height: 0;
-      display: block;
-      border: 3px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,.45);
-      padding: 8px;
-      overflow: auto;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 0;
+      background: #fff;
+      padding: 0;
+      overflow: visible;
       overscroll-behavior: contain;
       touch-action: pan-x pan-y;
       -webkit-overflow-scrolling: touch;
@@ -296,13 +622,15 @@
       isolation: isolate;
       width: max-content;
       margin: 0 auto;
+      padding: 0;
+      background: #fff;
     }
 
     .picture {
       grid-column: 2 / span var(--size);
       grid-row: 1 / span var(--size);
       z-index: 0;
-      border: 2px solid var(--line);
+      border: 0;
       background: var(--puzzle-image);
       background-size: cover;
       background-position: center;
@@ -311,25 +639,31 @@
     .target, .cell {
       position: relative;
       z-index: 1;
-      border: 2px solid var(--line);
+      border: 1px solid rgba(255,255,255,.86);
       display: grid;
       place-items: center;
       text-align: center;
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
     }
 
     .target {
-      background: rgba(255,255,255,.9);
-      color: var(--muted);
-      padding: 2px;
+      background: #edf1f7;
+      color: #5e6b7b;
+      padding: 0;
       line-height: 1.1;
-      font-size: .68rem;
+      font-size: .72rem;
       font-weight: 900;
+      border-radius: 3px;
+      box-shadow: inset 0 0 0 1px rgba(211,217,227,.55);
     }
 
     .target strong {
       display: block;
-      color: var(--ink);
-      font-size: .86rem;
+      color: #5e6b7b;
+      font-size: .82rem;
     }
 
     .target.ok { color: var(--good); }
@@ -337,8 +671,11 @@
 
     .cell {
       color: rgba(23, 32, 45, .78);
-      font-size: clamp(.78rem, calc(34vw / var(--size)), 1.9rem);
-      font-weight: 950;
+      font-size: clamp(.82rem, calc(var(--cell) * .48), 1.2rem);
+      font-weight: 500;
+      border-radius: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.38);
+      padding: 0;
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -348,8 +685,8 @@
 
     .cell.confirmed {
       color: #d71935;
-      text-shadow: 0 2px 0 rgba(255,255,255,.75), 0 0 10px rgba(255,255,255,.35);
-      box-shadow: inset 0 0 0 4px rgba(255,255,255,.58), inset 0 0 0 999px rgba(255,255,255,.1);
+      text-shadow: none;
+      box-shadow: none;
     }
 
     .cell.erased {
@@ -357,15 +694,25 @@
     }
 
     .cell.revealed {
-      opacity: 0;
       pointer-events: none;
-      transform: scale(.92);
+      transform: none;
+      font-weight: 700;
+      text-shadow: 0 1px 0 rgba(255,255,255,.35);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
+    }
+
+    .cell.confirmed.revealed {
+      color: #c7142e;
+    }
+
+    .cell.erased.revealed {
+      color: rgba(23,32,45,.62);
     }
 
     .cell.miss {
       animation: miss .32s ease, redGlow .62s ease;
       border-color: var(--bad);
-      box-shadow: 0 0 0 4px rgba(207,35,61,.28), 0 0 24px rgba(207,35,61,.95), inset 0 0 0 4px rgba(255,255,255,.48);
+      box-shadow: inset 0 0 0 999px rgba(207,35,61,.24);
     }
 
     @keyframes miss {
@@ -393,31 +740,23 @@
 
     .region-sum {
       position: absolute;
-      left: 3px;
-      top: 3px;
+      left: 2px;
+      top: 2px;
       z-index: 2;
-      min-width: 24px;
-      padding: 2px 4px;
-      border: 2px solid var(--line);
-      border-radius: 6px;
-      background: rgba(255,255,255,.9);
-      color: #182231;
-      font-size: clamp(.42rem, calc(9vw / var(--size)), .62rem);
-      font-weight: 950;
+      min-width: 0;
+      padding: 0 2px;
+      border: 0;
+      border-radius: 0;
+      background: #d9dde6;
+      color: #222;
+      font-size: clamp(.55rem, calc(var(--cell) * .28), .76rem);
+      font-weight: 500;
       line-height: 1;
       pointer-events: none;
     }
 
     .message {
-      min-height: 40px;
-      border: 2px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,255,255,.68);
-      padding: 8px 10px;
-      color: var(--muted);
-      font-weight: 800;
-      line-height: 1.35;
-      order: 3;
+      display: none;
     }
 
     .message.warn { color: var(--bad); }
@@ -454,8 +793,99 @@
       gap: 8px;
     }
 
+    .modal-actions .danger {
+      background: linear-gradient(180deg, #ff8d9b, #f34b60 58%, #c7263b);
+      color: #fff;
+      box-shadow: inset 0 3px 0 rgba(255,255,255,.52), inset 0 -4px 0 rgba(88,16,28,.16), 0 10px 20px rgba(23,32,45,.12);
+    }
+
     .clear-box {
       width: min(560px, 100%);
+      position: relative;
+      overflow: hidden;
+      animation: clearPop .46s cubic-bezier(.18, .86, .2, 1.08) both;
+    }
+
+    .clear-fanfare {
+      position: relative;
+      min-height: 84px;
+      margin: -4px 0 4px;
+      display: grid;
+      place-items: center;
+    }
+
+    .clear-fanfare::before,
+    .clear-fanfare::after {
+      content: "";
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: conic-gradient(from 12deg, #ff4968, #ffd35a, #53d37c, #55cde9, #8b6cff, #ff4968);
+      opacity: .24;
+      animation: fanfareSpin 1.7s linear infinite;
+    }
+
+    .clear-fanfare::after {
+      width: 112px;
+      height: 112px;
+      animation-direction: reverse;
+      opacity: .18;
+    }
+
+    .clear-fanfare span {
+      position: relative;
+      z-index: 1;
+      display: inline-grid;
+      place-items: center;
+      min-width: min(82vw, 340px);
+      padding: 12px 18px;
+      border: 4px solid #fff;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,0) 48%),
+        linear-gradient(135deg, #ff4968, #ffb12e 48%, #22bfe5);
+      color: #fff;
+      font-size: clamp(2rem, 8vw, 3.6rem);
+      font-weight: 950;
+      line-height: 1;
+      text-shadow: 0 3px 0 rgba(23,32,45,.22);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,.52), 0 16px 28px rgba(23,32,45,.18);
+      animation: clearTextPop .78s cubic-bezier(.18, .86, .2, 1.08) both;
+    }
+
+    .clear-sparks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 24%, #ffd35a 0 4px, transparent 5px),
+        radial-gradient(circle at 22% 64%, #55cde9 0 5px, transparent 6px),
+        radial-gradient(circle at 80% 22%, #ff6f91 0 5px, transparent 6px),
+        radial-gradient(circle at 88% 62%, #53d37c 0 4px, transparent 5px),
+        radial-gradient(circle at 48% 12%, #8b6cff 0 4px, transparent 5px);
+      animation: sparkBurst 1.15s ease-out both;
+    }
+
+    @keyframes clearPop {
+      from { opacity: 0; transform: translateY(26px) scale(.92); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes clearTextPop {
+      0% { opacity: 0; transform: scale(.5) rotate(-5deg); }
+      58% { opacity: 1; transform: scale(1.1) rotate(2deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    @keyframes fanfareSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes sparkBurst {
+      0% { opacity: 0; transform: scale(.45); }
+      24% { opacity: 1; }
+      100% { opacity: 0; transform: scale(1.35); }
     }
 
     .clear-image {
@@ -548,51 +978,112 @@
 
     @media (max-width: 720px) {
       :root {
-        --cell: min(12.7vw, calc((100dvh - 166px) / (var(--size) + 1)), 54px);
-        --target: min(10.2vw, calc((100dvh - 166px) / (var(--size) + 2)), 42px);
+        --cell: min(calc((100vw - 94px) / var(--size)), calc((100dvh - 174px) / (var(--size) + 1)), 32px);
+        --target: calc(var(--cell) * .92);
       }
 
-      .screen { width: calc(100% - 12px); padding: 8px 0; }
-      .title-box { padding: 28px 18px; }
+      .screen { width: 100%; padding: 8px 0; }
+      .title-box { width: 100%; padding: 44px 10px; }
+      h1 { font-size: clamp(2.6rem, 13vw, 4.8rem); }
+      .title-wordmark-img { width: min(96vw, 560px); }
+      .title-actions { gap: 8px; margin-top: 26px; }
+      .image-button { width: min(44vw, 184px); min-width: 136px; min-height: 48px; font-size: clamp(1rem, 4vw, 1.25rem); }
+      .title-tile { border-width: 3px; opacity: .62; }
+      .title-tile.a { left: -3%; top: 16%; }
+      .title-tile.b { right: -4%; top: 19%; }
+      .title-tile.c { left: 5%; bottom: 10%; }
+      .title-tile.d { right: 4%; bottom: 9%; }
       .screen-head { display: grid; align-items: start; }
       .screen-head .lead { margin: 8px 0 0; }
-      .stage-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-      .stage-card { min-height: 0; }
+      .stage-grid {
+        grid-template-columns: repeat(auto-fit, minmax(52px, 62px));
+        justify-content: center;
+        gap: 7px;
+      }
+      .stage-card {
+        width: 58px;
+        height: 44px;
+        min-height: 44px;
+      }
+      .stage-card strong { font-size: 1.18rem; }
       .gallery-grid { grid-template-columns: 1fr 1fr; }
-      .game-screen { gap: 6px; }
+      .game-screen {
+        height: 100dvh;
+        gap: 8px;
+        grid-template-rows: 48px minmax(0, 1fr) 64px;
+      }
       .status {
-        min-height: 38px;
-        padding: 6px 8px;
-        font-size: .88rem;
-        position: sticky;
+        min-height: 36px;
+        padding: 0;
+        font-size: 1rem;
+        position: relative;
         top: 0;
         z-index: 6;
       }
+      .status-meta,
+      .message { display: none; }
+      #backToStages {
+        min-height: 36px;
+        padding: 0 10px;
+      }
       .tools {
-        gap: 7px;
-        position: sticky;
+        gap: 12px;
+        position: relative;
         bottom: 0;
         z-index: 8;
-        padding-top: 3px;
-        background: linear-gradient(180deg, rgba(243,238,229,0), rgba(243,238,229,.96) 30%);
+        padding-top: 0;
+        background: transparent;
       }
       button { min-height: 36px; }
-      .tool { min-height: 58px; font-size: 1.12rem; }
-      .board-wrap { padding: 5px; border-radius: 10px; }
-      .target { font-size: .54rem; }
-      .target strong { font-size: .68rem; }
-      .region-sum { left: 2px; top: 2px; min-width: 20px; padding: 1px 3px; border-width: 1px; }
-      .message { min-height: 36px; padding: 6px 8px; font-size: .84rem; }
+      .tool { width: min(42vw, 150px); height: 52px; min-height: 52px; font-size: 1.05rem; }
+      .board-wrap {
+        overflow: visible;
+        touch-action: manipulation;
+        padding: 0;
+        border-radius: 0;
+      }
+      .target { font-size: 0; padding: 0; }
+      .target strong { font-size: clamp(.66rem, calc(var(--target) * .48), .88rem); }
+      .region-sum { left: 2px; top: 2px; min-width: 0; padding: 0 2px; border-width: 0; background: #d9dde6; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .title-screen::before,
+      .title-screen::after,
+      .title-ribbon,
+      .title-tile,
+      .title-flash,
+      .title-box,
+      .title-box::after,
+      .stage-screen::before,
+      .stage-screen::after,
+      h1,
+      .title-actions {
+        animation: none;
+      }
     }
   </style>
 </head>
 <body>
   <main id="titleScreen" class="screen title-screen active">
+    <div class="title-motion" aria-hidden="true">
+      <div class="title-ribbon one"></div>
+      <div class="title-ribbon two"></div>
+      <div class="title-tile a"></div>
+      <div class="title-tile b"></div>
+      <div class="title-tile c"></div>
+      <div class="title-tile d"></div>
+      <div class="title-flash"></div>
+    </div>
     <section class="title-box">
-      <h1>合計エリア<br>ナンプレ</h1>
-      <p class="lead">確定か消すを選んで数字をタップ。行、列、色エリアの合計をそろえる21ステージパズル。</p>
-      <button id="startButton" class="primary" type="button">スタート</button>
-      <button id="galleryButton" type="button">ギャラリー</button>
+      <div class="title-wordmark">
+        <img class="title-wordmark-img" src="assets/tetesum/title-wordmark.png" alt="Tetesum" />
+        <h1 class="title-fallback">Tetesum</h1>
+      </div>
+      <div class="title-actions">
+        <button id="startButton" class="image-button start" type="button">スタート</button>
+        <button id="galleryButton" class="image-button gallery" type="button">ギャラリー</button>
+      </div>
     </section>
   </main>
 
@@ -600,7 +1091,6 @@
     <header class="screen-head">
       <div>
         <h2>ステージ選択</h2>
-        <p class="lead">6×6から10×10まで。最後におまけの20×20があります。</p>
       </div>
       <button id="stageBackButton" type="button">タイトルへ</button>
     </header>
@@ -608,11 +1098,13 @@
   </main>
 
   <main id="gameScreen" class="screen game-screen">
+    <button id="gameExitButton" class="game-exit" type="button" aria-label="ステージ選択に戻る">×</button>
     <header class="status">
-      <div><span>ステージ</span> <strong id="stageLabel">1 / 21</strong></div>
-      <div><span>サイズ</span> <strong id="sizeLabel">6×6</strong></div>
+      <div class="status-meta"><span>ステージ</span> <strong id="stageLabel">1 / 21</strong></div>
+      <div class="status-meta"><span>サイズ</span> <strong id="sizeLabel">6×6</strong></div>
       <div><span>ライフ</span> <strong id="lifeLabel" class="hearts">♥♥♥</strong></div>
-      <div><span>操作</span> <strong id="toolLabel">確定</strong></div>
+      <div class="status-meta"><span>操作</span> <strong id="toolLabel">確定</strong></div>
+      <button id="backToStages" type="button">メニュー</button>
     </header>
     <section class="board-wrap" aria-label="パズル盤面">
       <div id="board" class="board"></div>
@@ -621,9 +1113,19 @@
     <section class="tools" aria-label="操作">
       <button id="confirmTool" class="tool active" type="button">確定</button>
       <button id="eraseTool" class="tool" type="button">消す</button>
-      <button id="backToStages" type="button">ステージ</button>
     </section>
   </main>
+
+  <div id="exitModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+    <div class="modal-box">
+      <h2 id="exitTitle">ステージ選択に戻る？</h2>
+      <p>今のステージは途中から再開できません。</p>
+      <div class="modal-actions">
+        <button id="exitToTitleButton" class="danger" type="button">ステージ選択へ</button>
+        <button id="continueButton" class="primary" type="button">続ける</button>
+      </div>
+    </div>
+  </div>
 
   <div id="gameOverModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
     <div class="modal-box">
@@ -639,11 +1141,13 @@
 
   <div id="clearModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
     <div class="modal-box clear-box">
+      <div class="clear-sparks" aria-hidden="true"></div>
+      <div class="clear-fanfare" aria-hidden="true"><span>クリア！</span></div>
       <h2 id="clearTitle">ステージクリア！</h2>
       <div id="clearImage" class="clear-image" aria-label="完成画像"></div>
       <div class="modal-actions">
         <button id="nextStageButton" class="primary" type="button">次のステージへ</button>
-        <button id="clearTitleButton" type="button">タイトルへ</button>
+        <button id="clearTitleButton" type="button">ステージ選択へ</button>
       </div>
     </div>
   </div>
@@ -657,7 +1161,7 @@
   </div>
 
   <script>
-    const palette = ["#f1c75d", "#7cc5b7", "#f29c84", "#a8ca74", "#b9a4df", "#8dbde8", "#efc0cf", "#d9b172", "#9bd4a3", "#f4a7a7", "#93c5fd", "#f8d66d", "#c4b5fd", "#67e8f9", "#f0abfc", "#bef264", "#fdba74", "#a7f3d0", "#fda4af", "#bfdbfe", "#ddd6fe", "#fde68a", "#99f6e4", "#fbcfe8", "#c7d2fe"];
+    const palette = ["#ffdca8", "#f7a4c9", "#a8dcfa", "#fff4a8", "#d7c2ff", "#c8f0b6", "#ffc8a8", "#bfe8ff", "#f5b4da", "#fff0b8", "#bfe7d6", "#e4ceff", "#ffcfd0", "#cce5ff", "#f8d7a4", "#d8f7be", "#f4b8c8", "#b9d8ff", "#fbe4a8", "#d0f0ee"];
     const sceneSets = [
       ["朝の庭", "#a7d8ff", "#78b46d", "#7d513e", "#f3b2a4", "#f7d35f", "watering"],
       ["港の夕暮れ", "#f6a66f", "#3d7890", "#30435b", "#d86e72", "#f2ca78", "wind"],
@@ -668,7 +1172,7 @@
     ];
     const sizes = [6,6,7,7,8,8,9,9,10,10,6,7,8,9,10,6,7,8,9,10,20];
 
-    const stages = sizes.map((size, index) => makeStage(size, index));
+    const stageCache = Array(sizes.length).fill(null);
 
     const state = {
       stageIndex: 0,
@@ -701,6 +1205,7 @@
     const confirmTool = document.getElementById("confirmTool");
     const eraseTool = document.getElementById("eraseTool");
     const gameOverModal = document.getElementById("gameOverModal");
+    const exitModal = document.getElementById("exitModal");
     const failBalloon = document.getElementById("failBalloon");
     const clearModal = document.getElementById("clearModal");
     const clearImage = document.getElementById("clearImage");
@@ -730,7 +1235,25 @@
         values,
         solution,
         scene: scene.slice(1, 6),
-        mishap: scene[6]
+        mishap: scene[6],
+        imageIndex: index
+      };
+    }
+
+    function getStage(index) {
+      if (!stageCache[index]) stageCache[index] = makeStage(sizes[index], index);
+      return stageCache[index];
+    }
+
+    function makeStagePreview(index) {
+      const scene = sceneSets[index % sceneSets.length];
+      const size = sizes[index];
+      return {
+        displayName: index === 20 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
+        size,
+        scene: scene.slice(1, 6),
+        mishap: scene[6],
+        imageIndex: index
       };
     }
 
@@ -884,6 +1407,21 @@
       return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
     }
 
+    function softColor(color) {
+      return color;
+    }
+
+    function fadedColor(color) {
+      const hex = color.replace("#", "");
+      const value = hex.length === 3
+        ? hex.split("").map(char => char + char).join("")
+        : hex;
+      const r = parseInt(value.slice(0, 2), 16);
+      const g = parseInt(value.slice(2, 4), 16);
+      const b = parseInt(value.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, .46)`;
+    }
+
     function svgData(svg) {
       return `data:image/svg+xml,${encodeURIComponent(svg)}`;
     }
@@ -902,42 +1440,91 @@
     }
 
     function makeCardImage(stage) {
-      const [sky, ground, , , accent] = stage.scene;
-      return svgUrl(`
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 420">
-          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${sky}"/><stop offset="1" stop-color="${ground}"/></linearGradient></defs>
-          <rect width="720" height="420" fill="url(#g)"/>
-          <circle cx="600" cy="76" r="46" fill="${accent}" opacity=".78"/>
-          <path d="M0 268l112-108 82 78 118-126 118 132 78-78 212 142v112H0z" fill="#ffffff" opacity=".28"/>
-          <path d="M0 290l112-96 82 70 118-116 118 120 78-72 212 132v92H0z" fill="${ground}" opacity=".58"/>
-          <path d="M0 318c110-56 210-48 322-12 130 42 250 24 398-50v164H0z" fill="${ground}" opacity=".78"/>
-          <path d="M88 250c28-42 56-42 84 0 30-56 70-56 102 0" fill="none" stroke="#fff" stroke-width="12" opacity=".62"/>
-          <circle cx="150" cy="334" r="18" fill="${accent}" opacity=".78"/>
-          <circle cx="482" cy="328" r="22" fill="#fff" opacity=".34"/>
-        </svg>
-      `);
+      return makePuzzleImage(stage);
     }
 
     function makePuzzleImage(stage) {
-      const [sky, ground, , outfit, accent] = stage.scene;
+      const catImages = [
+        "assets/tetesum/1.jpg",
+        "assets/tetesum/2.jpg",
+        "assets/tetesum/3.jpg",
+        "assets/tetesum/4.jpg",
+        "assets/tetesum/5.jpg"
+      ];
+      return `url("${catImages[(stage.imageIndex || 0) % catImages.length]}")`;
+
+      const [sky, ground, deep, accentA, accentB] = stage.scene || ["#a7d8ff", "#78b46d", "#3f5b73", "#f5a6be", "#ffd560"];
+      const variant = stage.imageIndex || 0;
+      const catX = 270 + ((variant % 5) - 2) * 18;
+      const catY = 258 + ((variant % 3) - 1) * 12;
+      const yarnA = ["#ff6fae", "#45b7ff", "#ffd23f", "#b388ff", "#38d9a9", "#ff8a5b"][variant % 6];
+      const yarnB = ["#45b7ff", "#ffd23f", "#ff6fae", "#38d9a9", "#ff8a5b", "#b388ff"][(variant + 2) % 6];
       const extras = {
-        watering: `<path d="M120 236c88-42 168-32 242 20 80 56 170 56 250 5" fill="none" stroke="#fff" stroke-width="18" opacity=".5"/><path d="M448 178c50 18 83 50 98 94" fill="none" stroke="#6fb9e8" stroke-width="18" stroke-linecap="round"/><circle cx="562" cy="304" r="16" fill="#6fb9e8"/><circle cx="604" cy="324" r="12" fill="#6fb9e8"/>`,
-        wind: `<path d="M80 190c96-42 150 34 245-1 64-23 116-58 220-14" fill="none" stroke="#fff" stroke-width="17" opacity=".7"/><path d="M496 146l90 34-74 52z" fill="#fff7cf" opacity=".86"/>`,
-        leaves: `<circle cx="580" cy="120" r="54" fill="${accent}" opacity=".65"/><path d="M110 120c60 120 84 210 58 300M600 108c-62 130-78 224-38 314" stroke="#20372b" stroke-width="28" opacity=".46"/><path d="M210 145l36 18-32 24zM522 230l42 10-26 32zM150 284l38 16-29 24z" fill="${accent}"/>`,
-        snow: `<path d="M0 316c120-40 238-34 354 0 116 34 222 28 366-30v154H0z" fill="#f8fbff"/><circle cx="150" cy="82" r="8" fill="#fff"/><circle cx="532" cy="126" r="11" fill="#fff"/><circle cx="430" cy="70" r="7" fill="#fff"/><path d="M110 286V166l76-62 76 62v120zM440 294V150l86-70 86 70v144z" fill="#6c8298" opacity=".72"/>`,
-        books: `<path d="M300 80V420h118V80z" fill="#222a45" opacity=".75"/><path d="M284 132h150M284 212h150M284 292h150" stroke="${accent}" stroke-width="14"/><rect x="90" y="274" width="88" height="30" fill="${outfit}" transform="rotate(-14 90 274)"/><rect x="126" y="228" width="92" height="30" fill="${accent}" transform="rotate(18 126 228)"/>`,
-        balloons: `<path d="M32 260c110-170 260-218 430-142 70 32 136 72 220 48" fill="none" stroke="#e95c70" stroke-width="24"/><path d="M46 294c116-132 254-162 410-82 68 34 128 54 218 28" fill="none" stroke="#ffd560" stroke-width="24"/><circle cx="570" cy="88" r="32" fill="${accent}"/><circle cx="626" cy="128" r="28" fill="${outfit}"/><path d="M570 120c-14 54-60 84-128 96M626 156c-10 38-44 70-100 95" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/>`
+        watering: `
+          <path d="M58 448c88-58 180-60 276-12 100 50 202 38 326-42v246H58z" fill="${ground}"/>
+          <path d="M98 500c110-80 232-74 356 14 74 52 134 34 198-18" fill="none" stroke="${yarnA}" stroke-width="22" stroke-linecap="round"/>
+          <circle cx="112" cy="502" r="34" fill="${yarnA}"/>
+          <path d="M488 214c58 20 98 58 118 118" fill="none" stroke="#5cc8ff" stroke-width="18" stroke-linecap="round"/>
+          <circle cx="626" cy="360" r="16" fill="#5cc8ff"/>
+          <circle cx="570" cy="350" r="10" fill="#5cc8ff"/>`,
+        wind: `
+          <path d="M0 470c120-72 220-70 336 0 112 68 222 50 384-44v294H0z" fill="${ground}"/>
+          <path d="M74 214c110-44 172 34 288-6 72-25 140-70 264-12" fill="none" stroke="#fff" stroke-width="18" opacity=".84" stroke-linecap="round"/>
+          <path d="M520 156l96 36-78 58z" fill="${accentB}" opacity=".95"/>
+          <path d="M120 524c118-54 238-44 366 30 68 38 118 26 170-16" fill="none" stroke="${yarnB}" stroke-width="18" stroke-linecap="round"/>`,
+        leaves: `
+          <rect y="442" width="720" height="278" fill="${ground}"/>
+          <path d="M120 88c72 146 92 288 58 502M590 74c-84 162-104 304-58 516" stroke="${deep}" stroke-width="28" opacity=".55" stroke-linecap="round"/>
+          <circle cx="142" cy="120" r="70" fill="${accentB}" opacity=".58"/>
+          <circle cx="594" cy="116" r="76" fill="${accentA}" opacity=".58"/>
+          <path d="M212 164l44 18-36 30zM520 244l48 10-30 38zM170 330l42 18-32 28z" fill="${accentB}"/>
+          <path d="M96 548c132-92 270-84 412 22" fill="none" stroke="${yarnA}" stroke-width="20" stroke-linecap="round"/>`,
+        snow: `
+          <rect y="420" width="720" height="300" fill="#f7fbff"/>
+          <path d="M80 392c120-46 238-40 356 2 98 34 180 28 284-28v354H80z" fill="#e7f4ff"/>
+          <circle cx="150" cy="102" r="8" fill="#fff"/><circle cx="532" cy="136" r="11" fill="#fff"/><circle cx="430" cy="82" r="7" fill="#fff"/>
+          <path d="M108 360V224l82-68 82 68v136zM476 372V202l94-78 94 78v170z" fill="${deep}" opacity=".54"/>
+          <path d="M124 538c138-48 276-42 414 24" fill="none" stroke="${yarnB}" stroke-width="20" stroke-linecap="round"/>`,
+        books: `
+          <rect width="720" height="720" fill="${sky}"/>
+          <rect y="492" width="720" height="228" fill="${ground}"/>
+          <rect x="88" y="96" width="90" height="396" fill="${accentA}" rx="8"/>
+          <rect x="184" y="126" width="72" height="366" fill="${accentB}" rx="8"/>
+          <rect x="534" y="96" width="84" height="396" fill="${deep}" rx="8" opacity=".78"/>
+          <path d="M104 196h60M104 296h60M196 220h46M196 324h46M548 196h54M548 302h54" stroke="#fff" stroke-width="10" opacity=".7"/>
+          <path d="M114 548c124-68 254-60 392 22 66 40 116 28 160-10" fill="none" stroke="${yarnA}" stroke-width="20" stroke-linecap="round"/>`,
+        balloons: `
+          <rect y="448" width="720" height="272" fill="${ground}"/>
+          <circle cx="550" cy="116" r="36" fill="${accentB}"/><circle cx="616" cy="154" r="32" fill="${accentA}"/><circle cx="488" cy="162" r="30" fill="${yarnB}"/>
+          <path d="M550 152c-18 74-84 116-174 136M616 188c-22 66-70 110-144 132M488 194c-12 58-48 96-112 116" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/>
+          <path d="M46 470c128-160 294-198 498-78 60 36 104 48 158 26" fill="none" stroke="${yarnA}" stroke-width="24" stroke-linecap="round"/>
+          <path d="M76 536c126-94 268-86 426 24 70 48 124 38 174-8" fill="none" stroke="${yarnB}" stroke-width="18" stroke-linecap="round"/>`
       };
+      const cat = `
+        <g transform="translate(${catX} ${catY}) rotate(${(variant % 5) * 4 - 8})">
+          <path d="M-86-82l-42-70-14 88zM86-84l50-66 4 90z" fill="#f28b32"/>
+          <ellipse cx="0" cy="0" rx="132" ry="106" fill="#f5a43b"/>
+          <path d="M-74-48c-42 44-54 116-18 166 42 58 136 78 212 32 52-32 76-86 62-142-48 50-110 46-178 18-38-16-74-14-110 10 0-32 10-60 32-84z" fill="#ffbd55"/>
+          <circle cx="-46" cy="-22" r="14" fill="#20242b"/><circle cx="54" cy="-26" r="14" fill="#20242b"/>
+          <path d="M0 4l24-4-10 20z" fill="#f05f72"/>
+          <path d="M-30 42c26 22 60 22 86 0" fill="none" stroke="#20242b" stroke-width="8" stroke-linecap="round"/>
+          <path d="M-98-8c-54-14-88-12-120 6M-96 20c-58 4-92 14-122 38M114-14c56-22 96-22 132-2M112 16c58 2 96 14 132 38" stroke="#20242b" stroke-width="6" stroke-linecap="round"/>
+          <path d="M-70-76c40-24 88-32 146-22" stroke="#d66f26" stroke-width="14" stroke-linecap="round" opacity=".52"/>
+        </g>`;
       return svgUrl(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720">
-          <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop stop-color="${sky}"/><stop offset=".62" stop-color="#f6df9a"/><stop offset="1" stop-color="${ground}"/></linearGradient></defs>
-          <rect width="720" height="720" fill="url(#g)"/>
-          ${extras[stage.mishap]}
-          <path d="M0 500c90-82 168-120 248-112 80 8 132 62 220 55 82-7 142-66 252-118v395H0z" fill="${ground}" opacity=".62"/>
-          <path d="M64 510c92-50 176-48 268 4 104 58 214 56 324-8" fill="none" stroke="#fff" stroke-width="18" opacity=".45"/>
-          <path d="M86 438l52-86 52 86zM172 454l68-118 72 118zM512 440l58-94 62 94z" fill="#20372b" opacity=".54"/>
-          <circle cx="148" cy="578" r="28" fill="${accent}" opacity=".72"/>
-          <circle cx="520" cy="592" r="34" fill="${outfit}" opacity=".55"/>
+          <defs>
+            <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+              <stop stop-color="${sky}"/>
+              <stop offset=".58" stop-color="#fff0bd"/>
+              <stop offset="1" stop-color="${ground}"/>
+            </linearGradient>
+          </defs>
+          <rect width="720" height="720" fill="url(#sky)"/>
+          ${extras[stage.mishap] || extras.watering}
+          ${cat}
+          <circle cx="${130 + variant * 11 % 460}" cy="${586 - variant * 7 % 90}" r="34" fill="${yarnA}"/>
+          <circle cx="${520 - variant * 13 % 360}" cy="${610 - variant * 5 % 80}" r="26" fill="${yarnB}"/>
         </svg>
       `);
     }
@@ -1012,7 +1599,7 @@
     }
 
     function startStage(index) {
-      const stage = stages[index];
+      const stage = getStage(index);
       state.stageIndex = index;
       state.size = stage.size;
       state.regionCount = stage.regionCount;
@@ -1031,7 +1618,7 @@
       setTool("confirm");
       showScreen("game");
       render();
-      setMessage(`ステージ${index + 1}「${stage.displayName}」。${stage.size}×${stage.size}です。`, "");
+      setMessage("", "");
     }
 
     function render() {
@@ -1039,13 +1626,12 @@
       boardEl.innerHTML = '<div class="picture" aria-hidden="true"></div>';
 
       for (let r = 0; r < state.size; r++) {
-        const rowSum = getRowSum(r);
         const rowTarget = state.rowTargets[r];
         const rowTargetEl = document.createElement("div");
-        rowTargetEl.className = `target ${targetClass(rowSum, rowTarget)}`;
+        rowTargetEl.className = "target";
         rowTargetEl.style.gridColumn = "1";
         rowTargetEl.style.gridRow = String(r + 1);
-        rowTargetEl.innerHTML = `<span>行</span><strong>${rowSum}/${rowTarget}</strong>`;
+        rowTargetEl.innerHTML = isRowAligned(r) ? "" : `<strong>${rowTarget}</strong>`;
         boardEl.append(rowTargetEl);
 
         for (let c = 0; c < state.size; c++) {
@@ -1056,8 +1642,9 @@
           cell.className = `cell ${stateClass} ${state.revealedRegions[regionId] ? "revealed" : ""}`;
           cell.style.gridColumn = String(c + 2);
           cell.style.gridRow = String(r + 1);
-          cell.style.background = palette[regionId % palette.length];
-          cell.textContent = state.revealedRegions[regionId] ? "" : (state.decided[r][c] && !state.selected[r][c] ? "×" : state.values[r][c]);
+          const baseColor = palette[regionId % palette.length];
+          cell.style.background = state.revealedRegions[regionId] ? fadedColor(baseColor) : softColor(baseColor);
+          cell.textContent = state.revealedRegions[regionId] ? (state.selected[r][c] ? state.values[r][c] : "") : (state.decided[r][c] && !state.selected[r][c] ? "×" : state.values[r][c]);
           cell.addEventListener("pointerup", event => {
             event.preventDefault();
             tapCell(r, c, cell);
@@ -1067,19 +1654,26 @@
       }
 
       for (let c = 0; c < state.size; c++) {
-        const colSum = getColSum(c);
         const colTarget = state.colTargets[c];
         const colTargetEl = document.createElement("div");
-        colTargetEl.className = `target ${targetClass(colSum, colTarget)}`;
+        colTargetEl.className = "target";
         colTargetEl.style.gridColumn = String(c + 2);
         colTargetEl.style.gridRow = String(state.size + 1);
-        colTargetEl.innerHTML = `<span>列</span><strong>${colSum}/${colTarget}</strong>`;
+        colTargetEl.innerHTML = isColAligned(c) ? "" : `<strong>${colTarget}</strong>`;
         boardEl.append(colTargetEl);
       }
 
       renderRegionSums();
       updateStatus();
       if (isSolved() && !state.won) winStage();
+    }
+
+    function isRowAligned(r) {
+      return getRowSum(r) === state.rowTargets[r];
+    }
+
+    function isColAligned(c) {
+      return getColSum(c) === state.colTargets[c];
     }
 
     function renderRegionSums() {
@@ -1094,7 +1688,7 @@
         label.className = "region-sum";
         label.style.gridColumn = String(topLeft[1] + 2);
         label.style.gridRow = String(topLeft[0] + 1);
-        label.textContent = `${getRegionSum(id)}/${state.regionTargets[id]}`;
+        label.textContent = state.regionTargets[id];
         boardEl.append(label);
       }
     }
@@ -1111,7 +1705,7 @@
         setTimeout(() => element.classList.remove("miss"), 360);
         updateStatus();
         if (state.lives <= 0) gameOver();
-        else setMessage(`ミス。ライフが残り${state.lives}です。`, "warn");
+        else setMessage("", "");
         return;
       }
 
@@ -1121,14 +1715,13 @@
       render();
       const opened = state.revealedRegions.filter(Boolean).length;
       if (opened > openedBefore) showPraiseBalloon(opened);
-      setMessage(`正解。完成エリア ${opened} / ${state.regionCount}。`, "");
+      setMessage("", "");
     }
 
     function isSolved() {
-      return state.rowTargets.every((target, r) => getRowSum(r) === target)
-        && state.colTargets.every((target, c) => getColSum(c) === target)
-        && state.regionTargets.every((target, id) => getRegionSum(id) === target)
-        && state.decided.flat().every(Boolean);
+      return state.decided.every((row, r) =>
+        row.every((decided, c) => decided && state.selected[r][c] === state.solution[r][c])
+      );
     }
 
     function winStage() {
@@ -1136,16 +1729,42 @@
       markStageCompleted(state.stageIndex);
       state.revealedRegions = Array(state.regionCount).fill(true);
       render();
-      const last = state.stageIndex === stages.length - 1;
-      setMessage(last ? "全21ステージクリア！" : "ステージクリア。ステージ選択から次へ進めます。", "win");
+      const last = state.stageIndex === sizes.length - 1;
+      setMessage("", "");
       showClearModal(last);
+      playFanfare();
     }
 
     function showClearModal(last) {
-      const stage = stages[state.stageIndex];
+      const stage = getStage(state.stageIndex);
       clearImage.style.setProperty("--clear-image", makePuzzleImage(stage));
-      nextStageButton.textContent = last ? "ステージ選択へ" : "次のステージへ";
+      nextStageButton.textContent = "次のステージへ";
+      nextStageButton.style.display = last ? "none" : "";
       clearModal.classList.add("active");
+    }
+
+    function playFanfare() {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        const notes = [523.25, 659.25, 783.99, 1046.5];
+        notes.forEach((freq, index) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + index * .11);
+          gain.gain.linearRampToValueAtTime(.12, ctx.currentTime + index * .11 + .02);
+          gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + index * .11 + .22);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(ctx.currentTime + index * .11);
+          osc.stop(ctx.currentTime + index * .11 + .24);
+        });
+        setTimeout(() => ctx.close(), 900);
+      } catch {
+        /* Audio is optional; visual clear animation still runs. */
+      }
     }
 
     function gameOver() {
@@ -1170,7 +1789,7 @@
     }
 
     function updateStatus() {
-      stageLabel.textContent = `${state.stageIndex + 1} / ${stages.length}`;
+      stageLabel.textContent = `${state.stageIndex + 1} / ${sizes.length}`;
       sizeLabel.textContent = `${state.size}×${state.size}`;
       lifeLabel.textContent = "♥".repeat(Math.max(0, state.lives)) + "♡".repeat(Math.max(0, 3 - state.lives));
       toolLabel.textContent = state.tool === "confirm" ? "確定" : "消す";
@@ -1184,8 +1803,8 @@
     }
 
     function setMessage(text, mode) {
-      messageEl.textContent = text;
-      messageEl.className = `message ${mode || ""}`;
+      messageEl.textContent = "";
+      messageEl.className = "message";
     }
 
     function loadCompletedStages() {
@@ -1216,7 +1835,7 @@
         return;
       }
       unlocked.forEach(index => {
-        const stage = stages[index];
+        const stage = getStage(index);
         if (!stage) return;
         const item = document.createElement("div");
         item.className = "gallery-item";
@@ -1228,18 +1847,17 @@
 
     function renderStageCards() {
       stageGrid.innerHTML = "";
-      stages.forEach((stage, index) => {
+      sizes.forEach((_, index) => {
+        const stage = makeStagePreview(index);
         const button = document.createElement("button");
         button.className = `stage-card ${completedStages.has(index) ? "completed" : ""}`;
         button.type = "button";
-        button.style.setProperty("--card-image", makeCardImage(stage));
         button.innerHTML = `<strong>${index + 1}</strong><span class="check">✓</span>`;
         button.title = `${stage.displayName} / ${stage.size}×${stage.size}`;
         button.addEventListener("click", () => startStage(index));
         stageGrid.append(button);
       });
     }
-
     document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
     document.getElementById("stageBackButton").addEventListener("click", () => showScreen("title"));
     document.getElementById("galleryButton").addEventListener("click", () => {
@@ -1250,17 +1868,27 @@
       galleryModal.classList.remove("active");
     });
     document.getElementById("backToStages").addEventListener("click", () => showScreen("stage"));
+    document.getElementById("gameExitButton").addEventListener("click", () => {
+      if (!state.won) exitModal.classList.add("active");
+    });
+    document.getElementById("continueButton").addEventListener("click", () => {
+      exitModal.classList.remove("active");
+    });
+    document.getElementById("exitToTitleButton").addEventListener("click", () => {
+      exitModal.classList.remove("active");
+      showScreen("stage");
+    });
     document.getElementById("returnTitleButton").addEventListener("click", () => {
       gameOverModal.classList.remove("active");
       showScreen("title");
     });
     document.getElementById("clearTitleButton").addEventListener("click", () => {
       clearModal.classList.remove("active");
-      showScreen("title");
+      showScreen("stage");
     });
     nextStageButton.addEventListener("click", () => {
       clearModal.classList.remove("active");
-      if (state.stageIndex >= stages.length - 1) showScreen("stage");
+      if (state.stageIndex >= sizes.length - 1) showScreen("stage");
       else startStage(state.stageIndex + 1);
     });
     document.getElementById("retryButton").addEventListener("click", () => {
