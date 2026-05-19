@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tetesum</title>
+  <title>緊縛エリアナンプレ</title>
   <style>
     :root {
       color-scheme: light;
@@ -184,7 +184,7 @@
     }
 
     .title-wordmark-img {
-      display: none;
+      display: block;
       width: min(92vw, 760px);
       height: auto;
       margin: 0 auto;
@@ -210,14 +210,14 @@
     }
 
     .title-fallback {
-      position: relative;
-      width: auto;
-      height: auto;
+      position: absolute;
+      width: 1px;
+      height: 1px;
       padding: 0;
-      margin: 0;
-      overflow: visible;
-      clip: auto;
-      white-space: normal;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
       border: 0;
     }
 
@@ -1132,8 +1132,8 @@
     </div>
     <section class="title-box">
       <div class="title-wordmark">
-        <img class="title-wordmark-img" src="assets/tetesum/title-wordmark.png" alt="Tetesum" />
-        <h1 class="title-fallback">Tetesum</h1>
+        <img class="title-wordmark-img" src="assets/tetesum/title-wordmark.png" alt="緊縛エリアナンプレ" />
+        <h1 class="title-fallback">緊縛エリアナンプレ</h1>
       </div>
       <div class="title-actions">
         <button id="startButton" class="image-button start" type="button">スタート</button>
