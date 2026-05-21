@@ -276,6 +276,28 @@
       font-size: .86rem;
     }
 
+    .ad-slot {
+      display: grid;
+      place-items: center;
+      margin: 18px auto 0;
+      overflow: hidden;
+      border-radius: 10px;
+      background: rgba(255,255,255,.72);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 20px rgba(23,32,45,.10);
+    }
+
+    .title-ad {
+      width: min(300px, 92vw);
+      min-height: 250px;
+    }
+
+    .stage-ad {
+      width: min(300px, 92vw);
+      min-height: 250px;
+      position: relative;
+      z-index: 1;
+    }
+
     .image-button {
       width: min(40vw, 210px);
       min-width: 150px;
@@ -1137,12 +1159,16 @@
 
     .modal-box {
       width: min(420px, 100%);
+      max-height: calc(100dvh - 40px);
       border: 3px solid var(--line);
       border-radius: 14px;
       background: #fff;
       padding: 24px;
       text-align: center;
       box-shadow: 0 20px 70px rgba(23,32,45,.22);
+      overflow: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
     }
 
     .modal-box h2 { margin: 0 0 8px; font-size: 2rem; }
@@ -1420,6 +1446,15 @@
         max-height: 88dvh;
         padding: 14px;
       }
+      .modal { padding: 10px; }
+      .modal-box {
+        max-height: calc(100dvh - 20px);
+        padding: 18px;
+      }
+      .policy-box h2,
+      .age-box h2 {
+        font-size: 1.55rem;
+      }
       .gallery-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-auto-rows: var(--gallery-cell, 150px);
@@ -1510,6 +1545,11 @@
         <span>画像は生成AIを使用</span>
         <button id="policyButton" class="notice-link" type="button">利用規約・プライバシー</button>
       </div>
+      <div class="ad-slot title-ad" aria-label="広告">
+        <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
+        <ins class="eas6a97888e2" data-zoneid="5931226"></ins>
+        <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+      </div>
     </section>
   </main>
 
@@ -1537,6 +1577,10 @@
       <button id="stageBackButton" type="button">タイトルへ</button>
     </header>
     <section id="stageGrid" class="stage-grid" aria-label="ステージ一覧"></section>
+    <div class="ad-slot stage-ad" aria-label="広告">
+      <ins class="eas6a97888e2" data-zoneid="5931226"></ins>
+      <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
+    </div>
   </main>
 
   <main id="gameScreen" class="screen game-screen">
