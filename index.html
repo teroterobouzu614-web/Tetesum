@@ -1258,14 +1258,17 @@
     .clear-box {
       width: min(560px, 100%);
       position: relative;
-      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 10px;
+      overflow: auto;
       animation: clearPop .46s cubic-bezier(.18, .86, .2, 1.08) both;
     }
 
     .clear-fanfare {
       position: relative;
       min-height: 84px;
-      margin: -4px 0 4px;
+      margin: -4px 0 0;
       display: grid;
       place-items: center;
     }
@@ -1346,10 +1349,11 @@
 
     .clear-image {
       width: 100%;
-      aspect-ratio: 1;
+      height: min(54dvh, 420px);
+      min-height: 220px;
       border: 3px solid var(--line);
       border-radius: 14px;
-      margin: 10px 0 14px;
+      margin: 0;
       background: var(--clear-image);
       background-size: cover;
       background-position: center;
@@ -1374,6 +1378,7 @@
       align-content: start;
       gap: 10px;
       padding: 6px;
+      isolation: isolate;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
     }
@@ -1387,6 +1392,7 @@
       border-radius: 12px;
       background: #f4f6fb;
       position: relative;
+      z-index: 0;
       overflow: hidden;
       cursor: zoom-in;
       transition: transform .16s ease, box-shadow .16s ease;
@@ -1395,6 +1401,7 @@
     .gallery-item.expanded {
       grid-column: 1 / -1;
       height: min(72dvh, 720px);
+      z-index: 4;
       cursor: zoom-out;
       box-shadow: 0 18px 44px rgba(23,32,45,.20);
     }
@@ -1494,6 +1501,41 @@
       .modal-box {
         max-height: calc(100dvh - 20px);
         padding: 18px;
+      }
+      .clear-box {
+        width: min(100% - 8px, 520px);
+        gap: 8px;
+        padding: 14px;
+      }
+      .clear-fanfare {
+        min-height: 62px;
+        margin: 0;
+      }
+      .clear-fanfare::before {
+        width: 104px;
+        height: 104px;
+      }
+      .clear-fanfare::after {
+        width: 78px;
+        height: 78px;
+      }
+      .clear-fanfare span {
+        min-width: min(72vw, 260px);
+        padding: 8px 12px;
+        border-width: 3px;
+        border-radius: 13px;
+        font-size: clamp(1.55rem, 9vw, 2.35rem);
+      }
+      .clear-image {
+        height: min(48dvh, 360px);
+        min-height: 150px;
+        border-radius: 12px;
+      }
+      .clear-box .modal-actions {
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        padding-top: 4px;
       }
       .policy-box h2,
       .age-box h2 {
@@ -1728,7 +1770,6 @@
     <div class="modal-box clear-box">
       <div class="clear-sparks" aria-hidden="true"></div>
       <div class="clear-fanfare" aria-hidden="true"><span>クリア！</span></div>
-      <h2 id="clearTitle">ステージクリア！</h2>
       <div id="clearImage" class="clear-image" aria-label="完成画像"></div>
       <div class="modal-actions">
         <button id="nextStageButton" class="primary" type="button">次のステージへ</button>
@@ -2895,6 +2936,13 @@
       clearModal.classList.add("active");
     }
 
+    function advanceAfterClear() {
+      if (!clearModal.classList.contains("active")) return;
+      clearModal.classList.remove("active");
+      if (state.stageIndex >= sizes.length - 1) showScreen("stage");
+      else startStage(state.stageIndex + 1);
+    }
+
     function playFanfare() {
       try {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -3149,10 +3197,13 @@
       clearModal.classList.remove("active");
       showScreen("stage");
     });
-    nextStageButton.addEventListener("click", () => {
-      clearModal.classList.remove("active");
-      if (state.stageIndex >= sizes.length - 1) showScreen("stage");
-      else startStage(state.stageIndex + 1);
+    nextStageButton.addEventListener("click", event => {
+      event.stopPropagation();
+      advanceAfterClear();
+    });
+    clearModal.addEventListener("click", event => {
+      if (event.target.closest("#clearTitleButton")) return;
+      advanceAfterClear();
     });
     document.getElementById("retryButton").addEventListener("click", () => {
       gameOverModal.classList.remove("active");
