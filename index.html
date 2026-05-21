@@ -296,6 +296,14 @@
       text-shadow: 0 2px 0 rgba(12,73,101,.28);
     }
 
+    .image-button.howto {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.58), rgba(255,255,255,0) 44%),
+        linear-gradient(135deg, #24c27a, #15a8cf);
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(8,88,73,.28);
+    }
+
     .lead {
       margin: 14px auto 24px;
       max-width: 520px;
@@ -370,6 +378,253 @@
     @keyframes stageFloat {
       from { transform: translate3d(0, -8px, 0); }
       to { transform: translate3d(0, 10px, 0); }
+    }
+
+    .tutorial-screen {
+      width: 100%;
+      min-height: 100dvh;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+      padding: 12px;
+      background:
+        linear-gradient(135deg, rgba(255, 248, 210, .97), rgba(255,255,255,.96) 42%, rgba(215, 246, 255, .97)),
+        #fff;
+    }
+
+    .tutorial-screen::before {
+      content: "";
+      position: absolute;
+      inset: -12%;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(255, 78, 112, .18) 0 90px, transparent 94px),
+        radial-gradient(circle at 83% 16%, rgba(36, 194, 122, .18) 0 86px, transparent 90px),
+        radial-gradient(circle at 72% 82%, rgba(31, 193, 229, .18) 0 120px, transparent 124px);
+      animation: stageFloat 7s ease-in-out infinite alternate;
+      pointer-events: none;
+    }
+
+    .tutorial-exit {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+    }
+
+    .tutorial-panel {
+      width: min(720px, 100%);
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .tutorial-panel h2 {
+      margin: 0;
+      color: #1d2939;
+      font-size: clamp(1.75rem, 6vw, 3.1rem);
+      letter-spacing: 0;
+      text-shadow: 0 2px 0 #fff;
+    }
+
+    .tutorial-text {
+      min-height: 58px;
+      margin: 0;
+      width: min(600px, 94vw);
+      color: #293547;
+      font-size: clamp(1rem, 3.8vw, 1.28rem);
+      font-weight: 850;
+      line-height: 1.45;
+      text-align: center;
+      display: grid;
+      place-items: center;
+    }
+
+    .tutorial-board {
+      --tutorial-cell: min(17vw, 64px);
+      display: grid;
+      grid-template-columns: calc(var(--tutorial-cell) * .88) repeat(4, var(--tutorial-cell));
+      grid-template-rows: repeat(4, var(--tutorial-cell)) calc(var(--tutorial-cell) * .88);
+      gap: 0;
+      justify-content: center;
+      position: relative;
+      padding: 0;
+      border: 2px solid #101828;
+      background: #101828;
+      box-shadow: 0 14px 28px rgba(23,32,45,.14);
+      touch-action: manipulation;
+    }
+
+    .tutorial-cell,
+    .tutorial-target {
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid #101828;
+      font-weight: 900;
+    }
+
+    .tutorial-cell {
+      position: relative;
+      color: #1d2939;
+      font-size: clamp(1.05rem, calc(var(--tutorial-cell) * .42), 1.65rem);
+      background: var(--area-color);
+    }
+
+    .tutorial-cell.chosen {
+      color: #e21c45;
+      text-shadow: 0 1px 0 rgba(255,255,255,.52);
+    }
+
+    .tutorial-cell.erased {
+      color: transparent;
+      background:
+        linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)),
+        var(--area-color);
+    }
+
+    .tutorial-cell.tutorial-dim,
+    .tutorial-target.tutorial-dim,
+    .tutorial-region-sum.tutorial-dim {
+      filter: brightness(.48) saturate(.62);
+      opacity: .48;
+      color: rgba(29, 41, 57, .58);
+    }
+
+    .tutorial-target {
+      background: #edf2f9;
+      color: #516070;
+      font-size: clamp(.9rem, calc(var(--tutorial-cell) * .32), 1.16rem);
+    }
+
+    .tutorial-target strong {
+      color: #344054;
+      font-size: 1.06em;
+    }
+
+    .tutorial-region-sum {
+      align-self: start;
+      justify-self: start;
+      min-width: 22px;
+      height: 20px;
+      display: grid;
+      place-items: center;
+      margin: 3px;
+      padding: 0 5px;
+      border-radius: 5px;
+      background: #d9dde6;
+      color: #394557;
+      font-size: clamp(.7rem, calc(var(--tutorial-cell) * .22), .92rem);
+      font-weight: 950;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .tutorial-focus {
+      outline: 3px solid #ff315d;
+      outline-offset: -3px;
+      z-index: 3;
+      filter: none;
+      opacity: 1;
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.86);
+    }
+
+    .tutorial-cursor {
+      width: 0;
+      height: 0;
+      position: absolute;
+      left: var(--cursor-x, calc(var(--tutorial-cell) * 1.38));
+      top: var(--cursor-y, calc(var(--tutorial-cell) * .5));
+      border-top: 22px solid #fff;
+      border-right: 14px solid transparent;
+      border-left: 0 solid transparent;
+      filter: drop-shadow(0 3px 0 #ff315d) drop-shadow(0 8px 10px rgba(23,32,45,.28));
+      z-index: 6;
+      pointer-events: none;
+      transform: translate(-18%, -18%) rotate(-18deg);
+      transition: left .34s ease, top .34s ease, transform .18s ease;
+    }
+
+    .tutorial-cursor::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: -17px;
+      width: 5px;
+      height: 18px;
+      border-radius: 3px;
+      background: #fff;
+      transform: rotate(-22deg);
+    }
+
+    .tutorial-cell.tutorial-hit {
+      animation: tutorialTap .42s ease;
+    }
+
+    @keyframes tutorialTap {
+      0%, 100% { transform: scale(1); }
+      45% { transform: scale(.9); }
+    }
+
+    .tutorial-note {
+      margin: 0;
+      color: #667080;
+      font-weight: 850;
+      font-size: .95rem;
+    }
+
+    .tutorial-calc {
+      min-height: 30px;
+      margin: -2px 0 0;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.86);
+      color: #1d2939;
+      font-size: clamp(.95rem, 3.5vw, 1.16rem);
+      font-weight: 950;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.92), 0 6px 14px rgba(23,32,45,.08);
+    }
+
+    .tutorial-tool-demo {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      width: min(420px, 92vw);
+      margin-top: 2px;
+    }
+
+    .tutorial-demo-tool {
+      width: min(42vw, 150px);
+      height: 52px;
+      min-height: 52px;
+      border: 2px solid #fff;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: 950;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.48), inset 0 -4px 0 rgba(23,32,45,.14), 0 10px 18px rgba(23,32,45,.14);
+      opacity: .5;
+      transform: scale(.96);
+    }
+
+    .tutorial-demo-tool.confirm {
+      background: linear-gradient(180deg, #ff6a80, #d91f43);
+    }
+
+    .tutorial-demo-tool.erase {
+      background: linear-gradient(180deg, #64dff6, #159fc8);
+    }
+
+    .tutorial-demo-tool.active {
+      opacity: 1;
+      transform: scale(1);
+      outline: 3px solid #ffd84d;
+      outline-offset: 2px;
     }
 
     .stage-screen {
@@ -639,6 +894,44 @@
     .game-exit:active {
       transform: translateY(2px);
       box-shadow: 0 4px 10px rgba(23,32,45,.10), inset 0 1px 0 rgba(255,255,255,.95);
+    }
+
+    .game-settings {
+      position: absolute;
+      left: max(10px, env(safe-area-inset-left));
+      top: max(8px, env(safe-area-inset-top));
+      z-index: 9;
+      min-width: 64px;
+      height: 40px;
+      min-height: 0;
+      padding: 0 12px;
+      border: 1px solid rgba(197, 207, 220, .95);
+      border-radius: 999px;
+      background: rgba(255,255,255,.88);
+      color: #445064;
+      font-size: .95rem;
+      box-shadow: 0 8px 18px rgba(23,32,45,.12), inset 0 1px 0 rgba(255,255,255,.95);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 10px 0 18px;
+      padding: 12px 14px;
+      border: 1px solid #dbe3ee;
+      border-radius: 12px;
+      background: #f7f9fc;
+      color: #253044;
+      font-weight: 850;
+    }
+
+    .setting-row input {
+      width: 24px;
+      height: 24px;
+      accent-color: #22a9cc;
     }
 
     .board-wrap {
@@ -1042,6 +1335,10 @@
       .title-wordmark-img { width: min(96vw, 560px); }
       .title-actions { gap: 8px; margin-top: 26px; }
       .image-button { width: min(44vw, 184px); min-width: 136px; min-height: 48px; font-size: clamp(1rem, 4vw, 1.25rem); }
+      .tutorial-screen { padding: 10px; }
+      .tutorial-panel { gap: 10px; }
+      .tutorial-text { min-height: 70px; width: min(94vw, 520px); }
+      .tutorial-board { --tutorial-cell: min(18vw, 58px); }
       .title-tile { border-width: 3px; opacity: .62; }
       .title-tile.a { left: -3%; top: 16%; }
       .title-tile.b { right: -4%; top: 19%; }
@@ -1147,8 +1444,24 @@
       </div>
       <div class="title-actions">
         <button id="startButton" class="image-button start" type="button">スタート</button>
+        <button id="howToButton" class="image-button howto" type="button">あそびかた</button>
         <button id="galleryButton" class="image-button gallery" type="button">ギャラリー</button>
       </div>
+    </section>
+  </main>
+
+  <main id="tutorialScreen" class="screen tutorial-screen">
+    <button id="tutorialCloseButton" class="game-exit tutorial-exit" type="button" aria-label="タイトルに戻る">×</button>
+    <section id="tutorialPanel" class="tutorial-panel" aria-label="あそびかた">
+      <h2>あそびかた</h2>
+      <p id="tutorialText" class="tutorial-text"></p>
+      <div id="tutorialBoard" class="tutorial-board" aria-label="チュートリアル盤面"></div>
+      <p id="tutorialCalc" class="tutorial-calc"></p>
+      <div id="tutorialToolDemo" class="tutorial-tool-demo" aria-label="操作の見本">
+        <button class="tutorial-demo-tool confirm" type="button">確定</button>
+        <button class="tutorial-demo-tool erase" type="button">消す</button>
+      </div>
+      <p class="tutorial-note">タップで次へ</p>
     </section>
   </main>
 
@@ -1164,6 +1477,7 @@
   </main>
 
   <main id="gameScreen" class="screen game-screen">
+    <button id="settingsButton" class="game-settings" type="button">設定</button>
     <button id="gameExitButton" class="game-exit" type="button" aria-label="ステージ選択に戻る">×</button>
     <header class="status">
       <div class="status-meta"><span>ステージ</span> <strong id="stageLabel">1 / 21</strong></div>
@@ -1189,6 +1503,19 @@
       <div class="modal-actions">
         <button id="exitToTitleButton" class="danger" type="button">ステージ選択へ</button>
         <button id="continueButton" class="primary" type="button">続ける</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-box">
+      <h2 id="settingsTitle">設定</h2>
+      <label class="setting-row">
+        <span>右クリックで消す</span>
+        <input id="rightClickEraseToggle" type="checkbox" />
+      </label>
+      <div class="modal-actions">
+        <button id="closeSettingsButton" class="primary" type="button">閉じる</button>
       </div>
     </div>
   </div>
@@ -1259,6 +1586,11 @@
     };
 
     const titleScreen = document.getElementById("titleScreen");
+    const tutorialScreen = document.getElementById("tutorialScreen");
+    const tutorialBoard = document.getElementById("tutorialBoard");
+    const tutorialText = document.getElementById("tutorialText");
+    const tutorialCalc = document.getElementById("tutorialCalc");
+    const tutorialToolDemo = document.getElementById("tutorialToolDemo");
     const stageScreen = document.getElementById("stageScreen");
     const gameScreen = document.getElementById("gameScreen");
     const stageGrid = document.getElementById("stageGrid");
@@ -1272,6 +1604,8 @@
     const eraseTool = document.getElementById("eraseTool");
     const gameOverModal = document.getElementById("gameOverModal");
     const exitModal = document.getElementById("exitModal");
+    const settingsModal = document.getElementById("settingsModal");
+    const rightClickEraseToggle = document.getElementById("rightClickEraseToggle");
     const failBalloon = document.getElementById("failBalloon");
     const clearModal = document.getElementById("clearModal");
     const clearImage = document.getElementById("clearImage");
@@ -1279,6 +1613,8 @@
     const galleryModal = document.getElementById("galleryModal");
     const galleryGrid = document.getElementById("galleryGrid");
     const storageKey = "sumAreaPuzzleCompletedStages";
+    const settingsKey = "sumAreaPuzzleSettings";
+    const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = [22, 23, 24, 25, 26, 27, 28].map(n => `assets/tetesum/${n}.jpg`);
     let forceClearTimer = null;
@@ -1288,6 +1624,73 @@
     );
     const failBalloonSrc = makeBalloonImage("失敗...", "#6b7280", "#f1f5f9", "#cf233d");
     failBalloon.src = failBalloonSrc;
+    const tutorialValues = [
+      [1, 3, 2, 4],
+      [2, 1, 4, 3],
+      [3, 4, 1, 2],
+      [3, 2, 3, 1]
+    ];
+    const tutorialSolution = [
+      [true, false, true, false],
+      [false, true, false, true],
+      [true, false, false, true],
+      [false, true, true, false]
+    ];
+    const tutorialRegions = [
+      [0, 0, 1, 1],
+      [0, 2, 2, 1],
+      [0, 2, 3, 3],
+      [0, 2, 3, 3]
+    ];
+    const tutorialColors = ["#ffd99a", "#ff9fc0", "#9fddff", "#fff2a8"];
+    const tutorialAllCells = Array.from({ length: 16 }, (_, index) => [Math.floor(index / 4), index % 4]);
+    const tutorialSteps = [
+      {
+        text: "まずは盤面全体を見ます。左が行の合計、下が列の合計、灰色ラベルが色エリアの合計です。",
+        focus: "overview",
+        calc: "全部を見てから、少しずつ絞り込みます"
+      },
+      {
+        text: "まず左の数字が行の目標です。ここでは「この数字かな？」と予想します。行だけではまだ確定できないことが多いです。",
+        focus: "row",
+        index: 0,
+        demoPath: [[0, 0], [0, 1], [0, 2], [0, 3]],
+        demoMode: "row-calc"
+      },
+      {
+        text: "次に下の数字が列の目標です。行の予想が、列でも合いそうか確認します。",
+        focus: "col",
+        index: 0,
+        demoPath: [[0, 0], [1, 0], [2, 0], [3, 0]],
+        demoMode: "col-calc"
+      },
+      {
+        text: "水色エリアを見ます。今回はここだけで確定できますね。確定を選んで1と2を残し、消すを選んで4を二つ消します。マウスなら設定オンで右クリックでも消せます。",
+        focus: "region",
+        index: 2,
+        demoPath: [[1, 1], [1, 2], [2, 1], [3, 1], [1, 1], [3, 1], [1, 2], [2, 1]],
+        demoMode: "region-confirm",
+        regionCheckLength: 4,
+        confirmLength: 2,
+        selected: []
+      },
+      {
+        text: "最後に全マスを順番に見て、まだ予想なのか、確定できるのか、消せるのかを決めます。",
+        focus: "all",
+        demoPath: tutorialAllCells,
+        demoMode: "solve-all",
+        selected: [],
+        erased: []
+      },
+      {
+        text: "本番では3回間違えると失敗です。クリアして絵を開放して集めましょう！",
+        focus: "all",
+        selected: [[0, 0], [0, 2], [1, 1], [1, 3], [2, 0], [2, 3], [3, 1], [3, 2]],
+        erased: [[0, 1], [0, 3], [1, 0], [1, 2], [2, 1], [2, 2], [3, 0], [3, 3]]
+      }
+    ];
+    let tutorialStep = 0;
+    let tutorialDemoTimer = null;
 
     function makeStage(size, index) {
       const scene = sceneSets[index % sceneSets.length];
@@ -1640,9 +2043,258 @@
     }
 
     function showScreen(name) {
+      if (name !== "tutorial") clearTutorialDemo();
       titleScreen.classList.toggle("active", name === "title");
+      tutorialScreen.classList.toggle("active", name === "tutorial");
       stageScreen.classList.toggle("active", name === "stage");
       gameScreen.classList.toggle("active", name === "game");
+    }
+
+    function getTutorialRegionCells(id) {
+      const cells = [];
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+          if (tutorialRegions[r][c] === id) cells.push([r, c]);
+        }
+      }
+      return cells;
+    }
+
+    function tutorialTargetSum(cells) {
+      return cells.reduce((sum, [r, c]) => sum + (tutorialSolution[r][c] ? tutorialValues[r][c] : 0), 0);
+    }
+
+    function tutorialCellIsFocused(step, r, c) {
+      if (step.focus === "overview") return true;
+      if (step.focus === "row") return r === step.index;
+      if (step.focus === "col") return c === step.index;
+      if (step.focus === "region") return tutorialRegions[r][c] === step.index;
+      if (step.focus === "tool-confirm" || step.focus === "tool-erase") return false;
+      if (step.focus === "confirm-demo") return cellInList(step.selected, r, c);
+      if (step.focus === "erase-demo") return cellInList(step.selected, r, c) || cellInList(step.erased, r, c);
+      return true;
+    }
+
+    function cellInList(list = [], r, c) {
+      return list.some(([row, col]) => row === r && col === c);
+    }
+
+    function tutorialRowTargetIsFocused(step, r) {
+      if (step.focus === "overview" || step.focus === "all") return true;
+      return step.focus === "row" ? r === step.index : false;
+    }
+
+    function tutorialColTargetIsFocused(step, c) {
+      if (step.focus === "overview" || step.focus === "all") return true;
+      return step.focus === "col" ? c === step.index : false;
+    }
+
+    function tutorialRegionLabelIsFocused(step, id) {
+      if (step.focus === "overview" || step.focus === "all") return true;
+      return step.focus === "region" ? id === step.index : false;
+    }
+
+    function updateTutorialToolDemo(step, tool = step.activeTool) {
+      tutorialToolDemo.querySelectorAll(".tutorial-demo-tool").forEach(button => {
+        button.classList.toggle("active", Boolean(tool) && button.classList.contains(tool));
+      });
+    }
+
+    function clearTutorialDemo() {
+      if (tutorialDemoTimer) {
+        clearTimeout(tutorialDemoTimer);
+        tutorialDemoTimer = null;
+      }
+    }
+
+    function setTutorialCalc(text = "") {
+      tutorialCalc.textContent = text;
+      tutorialCalc.style.visibility = text ? "visible" : "hidden";
+    }
+
+    function tutorialPartsForPath(step, index) {
+      return (step.demoPath || [])
+        .slice(0, index + 1)
+        .filter(([r, c]) => tutorialSolution[r][c])
+        .map(([r, c]) => tutorialValues[r][c]);
+    }
+
+    function formatTutorialSum(label, parts, target) {
+      const left = parts.length ? parts.join(" + ") : "0";
+      const sum = parts.reduce((total, value) => total + value, 0);
+      return `${label}: ${left} = ${sum} / 目標 ${target}`;
+    }
+
+    function tutorialCalcText(step, index, r, c) {
+      if (step.demoMode === "row-calc") {
+        const base = formatTutorialSum("行の予想", tutorialPartsForPath(step, index), 3);
+        return index >= step.demoPath.length - 1 ? `${base}。まだ確定できないことが多いです` : base;
+      }
+      if (step.demoMode === "col-calc") {
+        const base = formatTutorialSum("列も確認", tutorialPartsForPath(step, index), 4);
+        return index >= step.demoPath.length - 1 ? `${base}。まだ確認中` : base;
+      }
+      if (step.demoMode === "region-calc") {
+        const base = formatTutorialSum("色エリア確認", tutorialPartsForPath(step, index), 3);
+        return index >= step.demoPath.length - 1 ? `${base}。これは確定できます` : base;
+      }
+      if (step.demoMode === "region-confirm") {
+        if (index < step.regionCheckLength) {
+          const base = formatTutorialSum("色エリア確認", tutorialPartsForPath(step, index), 3);
+          return index >= step.regionCheckLength - 1 ? `${base}。今回は確定できます` : base;
+        }
+        const confirmEnd = step.regionCheckLength + step.confirmLength;
+        if (index < confirmEnd) {
+          const confirmParts = step.demoPath.slice(step.regionCheckLength, index + 1).map(([row, col]) => tutorialValues[row][col]);
+          return formatTutorialSum("確定を選択", confirmParts, 3);
+        }
+        return `消すを選択: ${tutorialValues[r][c]} は合計に入れない`;
+      }
+      if (step.demoMode === "confirm") {
+        const parts = (step.demoPath || []).slice(0, index + 1).map(([row, col]) => tutorialValues[row][col]);
+        const base = formatTutorialSum("これは確定できます", parts, 3);
+        return index >= step.demoPath.length - 1 ? `${base}` : base;
+      }
+      if (step.demoMode === "erase") return `消す: ${tutorialValues[r][c]} は合計に入れない`;
+      if (step.demoMode === "solve-all") {
+        const action = tutorialSolution[r][c] ? "確定" : "消す";
+        const prefix = tutorialSolution[r][c] ? "これは確定できます" : "これは消せます";
+        return `${prefix}: ${r + 1}行 ${c + 1}列の ${tutorialValues[r][c]} を${action}`;
+      }
+      return "";
+    }
+
+    function runTutorialDemo(step) {
+      clearTutorialDemo();
+      if (!step.demoPath) {
+        setTutorialCalc(step.calc || "");
+        return;
+      }
+
+      const cursor = document.createElement("div");
+      cursor.className = "tutorial-cursor";
+      tutorialBoard.append(cursor);
+      let index = 0;
+      const tick = () => {
+        const [r, c] = step.demoPath[index];
+        const cell = tutorialBoard.querySelector(`[data-t-cell="${r}-${c}"]`);
+        cursor.style.setProperty("--cursor-x", `calc(var(--tutorial-cell) * ${1.38 + c})`);
+        cursor.style.setProperty("--cursor-y", `calc(var(--tutorial-cell) * ${.5 + r})`);
+        if (step.demoMode === "region-confirm") {
+          const confirmEnd = step.regionCheckLength + step.confirmLength;
+          if (index < step.regionCheckLength) updateTutorialToolDemo(step, "");
+          else if (index < confirmEnd) updateTutorialToolDemo(step, "confirm");
+          else updateTutorialToolDemo(step, "erase");
+        }
+        if (cell) {
+          cell.classList.remove("tutorial-dim");
+          cell.classList.add("tutorial-focus", "tutorial-hit");
+          setTimeout(() => cell.classList.remove("tutorial-hit"), 430);
+          if (step.demoMode === "confirm") cell.classList.add("chosen");
+          if (step.demoMode === "region-confirm") {
+            const confirmEnd = step.regionCheckLength + step.confirmLength;
+            if (index >= step.regionCheckLength && index < confirmEnd) cell.classList.add("chosen");
+            if (index >= confirmEnd) cell.classList.add("erased");
+          }
+          if (step.demoMode === "erase") cell.classList.add("erased");
+          if (step.demoMode === "solve-all") {
+            if (tutorialSolution[r][c]) cell.classList.add("chosen");
+            else cell.classList.add("erased");
+          }
+        }
+        setTutorialCalc(tutorialCalcText(step, index, r, c));
+        index++;
+        if (index < step.demoPath.length) tutorialDemoTimer = setTimeout(tick, 620);
+        else if (step.demoMode === "region-confirm") {
+          tutorialDemoTimer = setTimeout(() => {
+            tutorialBoard.querySelectorAll(".tutorial-dim").forEach(el => el.classList.remove("tutorial-dim"));
+            tutorialBoard.querySelectorAll(".tutorial-focus").forEach(el => el.classList.remove("tutorial-focus"));
+            updateTutorialToolDemo(step, "");
+            setTutorialCalc("暗転を開けて、確定した数字と消した数字を確認します");
+          }, 720);
+        }
+      };
+      tick();
+    }
+
+    function renderTutorial() {
+      clearTutorialDemo();
+      const step = tutorialSteps[tutorialStep];
+      const rowTargets = tutorialValues.map((_, r) => tutorialTargetSum([[r,0], [r,1], [r,2], [r,3]]));
+      const colTargets = Array.from({ length: 4 }, (_, c) => tutorialTargetSum([[0,c], [1,c], [2,c], [3,c]]));
+      const regionTargets = Array.from({ length: 4 }, (_, id) => tutorialTargetSum(getTutorialRegionCells(id)));
+      tutorialText.textContent = step.text;
+      tutorialBoard.innerHTML = "";
+      updateTutorialToolDemo(step);
+
+      for (let r = 0; r < 4; r++) {
+        const target = document.createElement("div");
+        target.className = "tutorial-target";
+        if (step.focus === "row" && r === step.index) target.classList.add("tutorial-focus");
+        if (!tutorialRowTargetIsFocused(step, r)) target.classList.add("tutorial-dim");
+        target.style.gridColumn = "1";
+        target.style.gridRow = `${r + 1}`;
+        target.innerHTML = `<strong>${rowTargets[r]}</strong>`;
+        tutorialBoard.append(target);
+
+        for (let c = 0; c < 4; c++) {
+          const regionId = tutorialRegions[r][c];
+          const cell = document.createElement("div");
+          cell.className = "tutorial-cell";
+          if (cellInList(step.selected, r, c)) cell.classList.add("chosen");
+          if (cellInList(step.erased, r, c)) cell.classList.add("erased");
+          if (tutorialCellIsFocused(step, r, c)) {
+            if (step.focus !== "overview") cell.classList.add("tutorial-focus");
+          } else {
+            cell.classList.add("tutorial-dim");
+          }
+          cell.style.gridColumn = `${c + 2}`;
+          cell.style.gridRow = `${r + 1}`;
+          cell.style.setProperty("--area-color", tutorialColors[regionId]);
+          cell.dataset.tCell = `${r}-${c}`;
+          cell.textContent = tutorialValues[r][c];
+          tutorialBoard.append(cell);
+        }
+      }
+
+      for (let c = 0; c < 4; c++) {
+        const target = document.createElement("div");
+        target.className = "tutorial-target";
+        if (step.focus === "col" && c === step.index) target.classList.add("tutorial-focus");
+        if (!tutorialColTargetIsFocused(step, c)) target.classList.add("tutorial-dim");
+        target.style.gridColumn = `${c + 2}`;
+        target.style.gridRow = "5";
+        target.innerHTML = `<strong>${colTargets[c]}</strong>`;
+        tutorialBoard.append(target);
+      }
+
+      for (let id = 0; id < 4; id++) {
+        const [r, c] = getTutorialRegionCells(id)[0];
+        const label = document.createElement("div");
+        label.className = "tutorial-region-sum";
+        if (step.focus === "region" && id === step.index) label.classList.add("tutorial-focus");
+        if (!tutorialRegionLabelIsFocused(step, id)) label.classList.add("tutorial-dim");
+        label.style.gridColumn = `${c + 2}`;
+        label.style.gridRow = `${r + 1}`;
+        label.textContent = regionTargets[id];
+        tutorialBoard.append(label);
+      }
+      runTutorialDemo(step);
+    }
+
+    function startTutorial() {
+      tutorialStep = 0;
+      renderTutorial();
+      showScreen("tutorial");
+    }
+
+    function advanceTutorial() {
+      if (tutorialStep >= tutorialSteps.length - 1) {
+        showScreen("stage");
+        return;
+      }
+      tutorialStep++;
+      renderTutorial();
     }
 
     function getRegionCells(id) {
@@ -1771,7 +2423,12 @@
           cell.textContent = state.revealedRegions[regionId] ? (state.selected[r][c] ? state.values[r][c] : "") : (state.decided[r][c] && !state.selected[r][c] ? "×" : state.values[r][c]);
           cell.addEventListener("pointerup", event => {
             event.preventDefault();
+            if (event.button !== 0) return;
             tapCell(r, c, cell);
+          });
+          cell.addEventListener("contextmenu", event => {
+            event.preventDefault();
+            if (settings.rightClickErase) tapCell(r, c, cell, "erase");
           });
           boardEl.append(cell);
         }
@@ -1817,10 +2474,10 @@
       }
     }
 
-    function tapCell(r, c, element) {
+    function tapCell(r, c, element, toolOverride = state.tool) {
       const regionId = state.regions[r][c];
       if (state.won || state.revealedRegions[regionId] || state.decided[r][c]) return;
-      const wantsConfirm = state.tool === "confirm";
+      const wantsConfirm = toolOverride === "confirm";
       const correct = wantsConfirm === state.solution[r][c];
       if (!correct) {
         state.lives -= 1;
@@ -1954,6 +2611,21 @@
       forceClearTimer = null;
     }
 
+    function loadSettings() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(settingsKey) || "{}");
+        return {
+          rightClickErase: Boolean(parsed.rightClickErase)
+        };
+      } catch {
+        return { rightClickErase: false };
+      }
+    }
+
+    function saveSettings() {
+      localStorage.setItem(settingsKey, JSON.stringify(settings));
+    }
+
     function loadCompletedStages() {
       try {
         const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
@@ -2021,6 +2693,15 @@
       });
     }
     document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
+    document.getElementById("howToButton").addEventListener("click", startTutorial);
+    document.getElementById("tutorialCloseButton").addEventListener("click", event => {
+      event.stopPropagation();
+      showScreen("title");
+    });
+    tutorialScreen.addEventListener("click", event => {
+      if (event.target.closest("#tutorialCloseButton")) return;
+      advanceTutorial();
+    });
     document.getElementById("stageBackButton").addEventListener("click", () => showScreen("title"));
     document.getElementById("galleryButton").addEventListener("click", () => {
       renderGallery();
@@ -2033,6 +2714,17 @@
     document.getElementById("backToStages").addEventListener("click", () => showScreen("stage"));
     document.getElementById("gameExitButton").addEventListener("click", () => {
       if (!state.won) exitModal.classList.add("active");
+    });
+    document.getElementById("settingsButton").addEventListener("click", () => {
+      rightClickEraseToggle.checked = settings.rightClickErase;
+      settingsModal.classList.add("active");
+    });
+    rightClickEraseToggle.addEventListener("change", () => {
+      settings.rightClickErase = rightClickEraseToggle.checked;
+      saveSettings();
+    });
+    document.getElementById("closeSettingsButton").addEventListener("click", () => {
+      settingsModal.classList.remove("active");
     });
     document.getElementById("continueButton").addEventListener("click", () => {
       exitModal.classList.remove("active");
