@@ -2946,6 +2946,10 @@
     }
 
     function showAgeGateIfNeeded() {
+      if (new URLSearchParams(window.location.search).get("showAge") === "1") {
+        ageGateModal.classList.add("active");
+        return;
+      }
       if (localStorage.getItem(ageGateKey) === "yes") return;
       ageGateModal.classList.add("active");
     }
