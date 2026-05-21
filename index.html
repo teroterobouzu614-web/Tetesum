@@ -1717,7 +1717,6 @@
     <div class="modal-box">
       <img id="failBalloon" class="fail-balloon" alt="失敗..." />
       <h2 id="gameOverTitle">ゲームオーバー</h2>
-      <p>ライフがなくなりました。タイトルに戻ってやり直せます。</p>
       <div class="modal-actions">
         <button id="retryButton" type="button">もう一度</button>
         <button id="returnTitleButton" class="primary" type="button">タイトルに戻る</button>
@@ -1933,6 +1932,10 @@
         mishap: scene[6],
         imageIndex: getStageImageIndex(index)
       };
+    }
+
+    function stageNumberLabel(index) {
+      return index === sizes.length - 1 ? "EX" : String(index + 1);
     }
 
     function makeStageRegions(size, index) {
@@ -2938,7 +2941,7 @@
     }
 
     function updateStatus() {
-      stageLabel.textContent = `${state.stageIndex + 1} / ${sizes.length}`;
+      stageLabel.textContent = state.stageIndex === sizes.length - 1 ? "EX" : `${state.stageIndex + 1} / ${sizes.length - 1}`;
       sizeLabel.textContent = `${state.size}×${state.size}`;
       lifeLabel.textContent = "♥".repeat(Math.max(0, state.lives)) + "♡".repeat(Math.max(0, 3 - state.lives));
       toolLabel.textContent = state.tool === "confirm" ? "確定" : "消す";
@@ -3042,7 +3045,7 @@
         img.alt = `ステージ${index + 1}の解放画像`;
         img.loading = "lazy";
         const label = document.createElement("span");
-        label.textContent = index + 1;
+        label.textContent = stageNumberLabel(index);
         item.append(img, label);
         item.addEventListener("click", () => {
           const wasExpanded = item.classList.contains("expanded");
@@ -3075,7 +3078,7 @@
         const button = document.createElement("button");
         button.className = `stage-card ${completedStages.has(index) ? "completed" : ""}`;
         button.type = "button";
-        button.innerHTML = `<strong>${index + 1}</strong><span class="check">✓</span>`;
+        button.innerHTML = `<strong>${stageNumberLabel(index)}</strong><span class="check">✓</span>`;
         button.title = `${stage.displayName} / ${stage.size}×${stage.size}`;
         button.addEventListener("click", () => startStage(index));
         stageGrid.append(button);
