@@ -457,6 +457,7 @@
       background: #101828;
       box-shadow: 0 14px 28px rgba(23,32,45,.14);
       touch-action: manipulation;
+      overflow: visible;
     }
 
     .tutorial-cell,
@@ -535,6 +536,7 @@
     }
 
     .tutorial-cursor {
+      --cursor-speed: .34s;
       width: 0;
       height: 0;
       position: absolute;
@@ -547,7 +549,7 @@
       z-index: 6;
       pointer-events: none;
       transform: translate(-18%, -18%) rotate(-18deg);
-      transition: left .34s ease, top .34s ease, transform .18s ease;
+      transition: left var(--cursor-speed) ease, top var(--cursor-speed) ease, transform .18s ease;
     }
 
     .tutorial-cursor::after {
@@ -2176,20 +2178,32 @@
       ];
       let actionIndex = 0;
 
+      const moveCursorToCell = ([r, c]) => {
+        cursor.style.setProperty("--cursor-speed", ".58s");
+        cursor.style.setProperty("--cursor-x", `calc(var(--tutorial-cell) * ${1.38 + c})`);
+        cursor.style.setProperty("--cursor-y", `calc(var(--tutorial-cell) * ${.5 + r})`);
+      };
+
+      const moveCursorToTool = tool => {
+        cursor.style.setProperty("--cursor-speed", ".72s");
+        cursor.style.setProperty("--cursor-x", tool === "confirm" ? "calc(50% - 86px)" : "calc(50% + 58px)");
+        cursor.style.setProperty("--cursor-y", "calc(100% + 82px)");
+      };
+
       const tick = () => {
         const action = actions[actionIndex];
         if (action.type === "tool") {
+          moveCursorToTool(action.tool);
           updateTutorialToolDemo(step, action.tool);
           setTutorialCalc(action.calc);
           actionIndex++;
-          tutorialDemoTimer = setTimeout(tick, 980);
+          tutorialDemoTimer = setTimeout(tick, 1350);
           return;
         }
 
         const [r, c] = action.cell;
         const cell = tutorialBoard.querySelector(`[data-t-cell="${r}-${c}"]`);
-        cursor.style.setProperty("--cursor-x", `calc(var(--tutorial-cell) * ${1.38 + c})`);
-        cursor.style.setProperty("--cursor-y", `calc(var(--tutorial-cell) * ${.5 + r})`);
+        moveCursorToCell(action.cell);
 
         if (cell) {
           cell.classList.remove("tutorial-dim");
@@ -2215,7 +2229,7 @@
 
         actionIndex++;
         if (actionIndex < actions.length) {
-          tutorialDemoTimer = setTimeout(tick, 900);
+          tutorialDemoTimer = setTimeout(tick, 1050);
         } else {
           tutorialDemoTimer = setTimeout(() => {
             tutorialBoard.querySelectorAll(".tutorial-dim").forEach(el => el.classList.remove("tutorial-dim"));
