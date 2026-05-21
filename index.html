@@ -1936,45 +1936,86 @@
     }
 
     function makeStageRegions(size, index) {
-      if (index < 5) return smallStageRegions4(index === 4 ? 3 : 4);
-      if (index >= 5 && index < 10) return smallStageRegions5(index === 9 ? 4 : 5);
+      if (index < 5) return smallStageRegions4(index);
+      if (index >= 5 && index < 10) return smallStageRegions5(index - 5);
       return makeRegions(size, index + 11);
     }
 
-    function smallStageRegions4(count) {
-      if (count === 3) {
-        return [
-          [0,0,1,1],
+    function smallStageRegions4(variant) {
+      const patterns = [
+        [
           [0,0,1,1],
           [0,2,2,1],
+          [3,2,2,1],
+          [3,3,3,1]
+        ],
+        [
+          [0,1,1,1],
+          [0,0,2,1],
+          [3,0,2,2],
+          [3,3,3,2]
+        ],
+        [
+          [0,0,0,1],
+          [2,2,0,1],
+          [2,3,3,1],
+          [2,2,3,1]
+        ],
+        [
+          [0,0,1,1],
+          [2,0,0,1],
+          [2,2,3,1],
+          [2,3,3,3]
+        ],
+        [
+          [0,0,1,1],
+          [0,2,2,1],
+          [0,0,2,1],
           [2,2,2,1]
-        ];
-      }
-      return [
-        [0,0,1,1],
-        [0,0,1,1],
-        [2,2,3,3],
-        [2,2,3,3]
+        ]
       ];
+      return patterns[variant % patterns.length];
     }
 
-    function smallStageRegions5(count) {
-      if (count === 4) {
-        return [
+    function smallStageRegions5(variant) {
+      const patterns = [
+        [
           [0,0,0,1,1],
+          [0,2,0,1,3],
+          [2,2,2,1,3],
+          [4,4,2,3,3],
+          [4,4,4,4,3]
+        ],
+        [
+          [0,0,1,1,1],
+          [2,0,0,3,1],
+          [2,2,0,3,3],
+          [2,4,4,4,3],
+          [2,2,4,3,3]
+        ],
+        [
+          [0,1,1,1,2],
+          [0,0,3,1,2],
+          [0,4,3,3,2],
+          [4,4,4,3,2],
+          [4,4,4,2,2]
+        ],
+        [
+          [0,0,0,1,1],
+          [2,2,0,3,1],
+          [2,4,4,3,1],
+          [2,2,4,3,3],
+          [2,4,4,3,3]
+        ],
+        [
+          [0,0,1,1,1],
           [0,2,2,1,1],
-          [0,2,2,2,1],
-          [3,3,2,1,1],
-          [3,3,3,3,1]
-        ];
-      }
-      return [
-        [0,0,0,1,1],
-        [0,0,2,1,1],
-        [3,2,2,2,1],
-        [3,3,2,4,4],
-        [3,3,4,4,4]
+          [0,2,3,3,1],
+          [0,2,2,3,1],
+          [0,0,3,3,1]
+        ]
       ];
+      return patterns[variant % patterns.length];
     }
 
     function makeRegions(size, seed) {
