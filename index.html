@@ -2164,6 +2164,71 @@
       return "";
     }
 
+    function runRegionConfirmDemo(step, cursor) {
+      const confirmStart = step.regionCheckLength;
+      const confirmEnd = confirmStart + step.confirmLength;
+      const actions = [
+        ...step.demoPath.slice(0, step.regionCheckLength).map((cell, pathIndex) => ({ type: "check", cell, pathIndex })),
+        { type: "tool", tool: "confirm", calc: "赤い「確定」を選択します" },
+        ...step.demoPath.slice(confirmStart, confirmEnd).map((cell, offset) => ({ type: "confirm", cell, pathIndex: confirmStart + offset })),
+        { type: "tool", tool: "erase", calc: "水色の「消す」を選択しなおします" },
+        ...step.demoPath.slice(confirmEnd).map((cell, offset) => ({ type: "erase", cell, pathIndex: confirmEnd + offset }))
+      ];
+      let actionIndex = 0;
+
+      const tick = () => {
+        const action = actions[actionIndex];
+        if (action.type === "tool") {
+          updateTutorialToolDemo(step, action.tool);
+          setTutorialCalc(action.calc);
+          actionIndex++;
+          tutorialDemoTimer = setTimeout(tick, 980);
+          return;
+        }
+
+        const [r, c] = action.cell;
+        const cell = tutorialBoard.querySelector(`[data-t-cell="${r}-${c}"]`);
+        cursor.style.setProperty("--cursor-x", `calc(var(--tutorial-cell) * ${1.38 + c})`);
+        cursor.style.setProperty("--cursor-y", `calc(var(--tutorial-cell) * ${.5 + r})`);
+
+        if (cell) {
+          cell.classList.remove("tutorial-dim");
+          cell.classList.add("tutorial-focus", "tutorial-hit");
+          setTimeout(() => cell.classList.remove("tutorial-hit"), 430);
+          if (action.type === "confirm") cell.classList.add("chosen");
+          if (action.type === "erase") cell.classList.add("erased");
+        }
+
+        if (action.type === "check") {
+          updateTutorialToolDemo(step, "");
+          setTutorialCalc(tutorialCalcText(step, action.pathIndex, r, c));
+        } else if (action.type === "confirm") {
+          updateTutorialToolDemo(step, "confirm");
+          const confirmParts = step.demoPath
+            .slice(confirmStart, action.pathIndex + 1)
+            .map(([row, col]) => tutorialValues[row][col]);
+          setTutorialCalc(formatTutorialSum("確定を選択", confirmParts, 3));
+        } else {
+          updateTutorialToolDemo(step, "erase");
+          setTutorialCalc(`消すを選択: ${tutorialValues[r][c]} は合計に入れない`);
+        }
+
+        actionIndex++;
+        if (actionIndex < actions.length) {
+          tutorialDemoTimer = setTimeout(tick, 900);
+        } else {
+          tutorialDemoTimer = setTimeout(() => {
+            tutorialBoard.querySelectorAll(".tutorial-dim").forEach(el => el.classList.remove("tutorial-dim"));
+            tutorialBoard.querySelectorAll(".tutorial-focus").forEach(el => el.classList.remove("tutorial-focus"));
+            updateTutorialToolDemo(step, "");
+            setTutorialCalc("暗転を開けて、確定した数字と消した数字を確認します");
+          }, 950);
+        }
+      };
+
+      tick();
+    }
+
     function runTutorialDemo(step) {
       clearTutorialDemo();
       if (!step.demoPath) {
@@ -2174,28 +2239,22 @@
       const cursor = document.createElement("div");
       cursor.className = "tutorial-cursor";
       tutorialBoard.append(cursor);
+      if (step.demoMode === "region-confirm") {
+        runRegionConfirmDemo(step, cursor);
+        return;
+      }
+
       let index = 0;
       const tick = () => {
         const [r, c] = step.demoPath[index];
         const cell = tutorialBoard.querySelector(`[data-t-cell="${r}-${c}"]`);
         cursor.style.setProperty("--cursor-x", `calc(var(--tutorial-cell) * ${1.38 + c})`);
         cursor.style.setProperty("--cursor-y", `calc(var(--tutorial-cell) * ${.5 + r})`);
-        if (step.demoMode === "region-confirm") {
-          const confirmEnd = step.regionCheckLength + step.confirmLength;
-          if (index < step.regionCheckLength) updateTutorialToolDemo(step, "");
-          else if (index < confirmEnd) updateTutorialToolDemo(step, "confirm");
-          else updateTutorialToolDemo(step, "erase");
-        }
         if (cell) {
           cell.classList.remove("tutorial-dim");
           cell.classList.add("tutorial-focus", "tutorial-hit");
           setTimeout(() => cell.classList.remove("tutorial-hit"), 430);
           if (step.demoMode === "confirm") cell.classList.add("chosen");
-          if (step.demoMode === "region-confirm") {
-            const confirmEnd = step.regionCheckLength + step.confirmLength;
-            if (index >= step.regionCheckLength && index < confirmEnd) cell.classList.add("chosen");
-            if (index >= confirmEnd) cell.classList.add("erased");
-          }
           if (step.demoMode === "erase") cell.classList.add("erased");
           if (step.demoMode === "solve-all") {
             if (tutorialSolution[r][c]) cell.classList.add("chosen");
@@ -2205,14 +2264,6 @@
         setTutorialCalc(tutorialCalcText(step, index, r, c));
         index++;
         if (index < step.demoPath.length) tutorialDemoTimer = setTimeout(tick, 620);
-        else if (step.demoMode === "region-confirm") {
-          tutorialDemoTimer = setTimeout(() => {
-            tutorialBoard.querySelectorAll(".tutorial-dim").forEach(el => el.classList.remove("tutorial-dim"));
-            tutorialBoard.querySelectorAll(".tutorial-focus").forEach(el => el.classList.remove("tutorial-focus"));
-            updateTutorialToolDemo(step, "");
-            setTutorialCalc("暗転を開けて、確定した数字と消した数字を確認します");
-          }, 720);
-        }
       };
       tick();
     }
