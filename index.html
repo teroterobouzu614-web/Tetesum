@@ -254,6 +254,28 @@
       animation: titleTextIn .7s .36s cubic-bezier(.18, .86, .2, 1.08) both;
     }
 
+    .title-notices {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 18px;
+      color: #48556a;
+      font-size: .86rem;
+      font-weight: 850;
+    }
+
+    .notice-link {
+      min-height: 0;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #344054;
+      text-decoration: underline;
+      box-shadow: none;
+      font-size: .86rem;
+    }
+
     .image-button {
       width: min(40vw, 210px);
       min-width: 150px;
@@ -1126,6 +1148,40 @@
     .modal-box h2 { margin: 0 0 8px; font-size: 2rem; }
     .modal-box p { margin: 0 0 18px; color: var(--muted); font-weight: 750; }
 
+    .policy-box {
+      width: min(640px, 100%);
+      text-align: left;
+    }
+
+    .policy-box h2 { text-align: center; }
+
+    .policy-box h3 {
+      margin: 18px 0 6px;
+      color: #1d2939;
+      font-size: 1.08rem;
+    }
+
+    .policy-box p,
+    .policy-box li {
+      color: #526071;
+      line-height: 1.55;
+      font-weight: 720;
+    }
+
+    .policy-box ul {
+      margin: 0 0 14px;
+      padding-left: 20px;
+    }
+
+    .policy-box .modal-actions,
+    .age-box .modal-actions {
+      margin-top: 18px;
+    }
+
+    .age-box p {
+      line-height: 1.55;
+    }
+
     .modal-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1449,6 +1505,11 @@
         <button id="howToButton" class="image-button howto" type="button">あそびかた</button>
         <button id="galleryButton" class="image-button gallery" type="button">ギャラリー</button>
       </div>
+      <div class="title-notices">
+        <span>18歳以上対象</span>
+        <span>画像は生成AIを使用</span>
+        <button id="policyButton" class="notice-link" type="button">利用規約・プライバシー</button>
+      </div>
     </section>
   </main>
 
@@ -1518,6 +1579,41 @@
       </label>
       <div class="modal-actions">
         <button id="closeSettingsButton" class="primary" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="ageGateModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
+    <div class="modal-box age-box">
+      <h2 id="ageGateTitle">18歳以上確認</h2>
+      <p>このゲームには成人向けの表現を含む画像が表示されます。18歳未満の方は利用できません。</p>
+      <p>画像は生成AIを使用しています。登場人物は全員18歳以上の設定です。</p>
+      <div class="modal-actions">
+        <button id="leaveAgeGateButton" class="danger" type="button">退出する</button>
+        <button id="confirmAgeButton" class="primary" type="button">18歳以上です</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="policyModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
+    <div class="modal-box policy-box">
+      <h2 id="policyTitle">利用規約・プライバシー</h2>
+      <h3>年齢制限</h3>
+      <p>本サイトは18歳以上の利用者を対象としています。18歳未満の方は利用できません。</p>
+      <h3>コンテンツについて</h3>
+      <ul>
+        <li>掲載画像は生成AIを使用しています。</li>
+        <li>登場人物は全員18歳以上の設定です。</li>
+        <li>実在の人物、団体、事件とは関係ありません。</li>
+      </ul>
+      <h3>保存データ</h3>
+      <p>クリア状況や設定は、お使いのブラウザ内のlocalStorageに保存されます。サーバー側のアカウント保存は行っていません。</p>
+      <h3>広告とアクセス解析</h3>
+      <p>将来的に成人向け広告を表示する場合があります。広告配信事業者がCookie等を利用する場合があります。</p>
+      <h3>問い合わせ</h3>
+      <p>連絡先は公開先ページまたは運営者プロフィールに掲載します。</p>
+      <div class="modal-actions">
+        <button id="closePolicyButton" class="primary" type="button">閉じる</button>
       </div>
     </div>
   </div>
@@ -1607,6 +1703,8 @@
     const gameOverModal = document.getElementById("gameOverModal");
     const exitModal = document.getElementById("exitModal");
     const settingsModal = document.getElementById("settingsModal");
+    const ageGateModal = document.getElementById("ageGateModal");
+    const policyModal = document.getElementById("policyModal");
     const rightClickEraseToggle = document.getElementById("rightClickEraseToggle");
     const failBalloon = document.getElementById("failBalloon");
     const clearModal = document.getElementById("clearModal");
@@ -1616,6 +1714,7 @@
     const galleryGrid = document.getElementById("galleryGrid");
     const storageKey = "sumAreaPuzzleCompletedStages";
     const settingsKey = "sumAreaPuzzleSettings";
+    const ageGateKey = "tetesumAgeConfirmed";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = [22, 23, 24, 25, 26, 27, 28].map(n => `assets/tetesum/${n}.jpg`);
@@ -2691,6 +2790,11 @@
       localStorage.setItem(settingsKey, JSON.stringify(settings));
     }
 
+    function showAgeGateIfNeeded() {
+      if (localStorage.getItem(ageGateKey) === "yes") return;
+      ageGateModal.classList.add("active");
+    }
+
     function loadCompletedStages() {
       try {
         const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
@@ -2773,6 +2877,19 @@
       galleryModal.classList.add("active");
       requestAnimationFrame(fitGallery);
     });
+    document.getElementById("policyButton").addEventListener("click", () => {
+      policyModal.classList.add("active");
+    });
+    document.getElementById("closePolicyButton").addEventListener("click", () => {
+      policyModal.classList.remove("active");
+    });
+    document.getElementById("confirmAgeButton").addEventListener("click", () => {
+      localStorage.setItem(ageGateKey, "yes");
+      ageGateModal.classList.remove("active");
+    });
+    document.getElementById("leaveAgeGateButton").addEventListener("click", () => {
+      document.body.innerHTML = '<main class="screen active" style="place-items:center;text-align:center;"><section class="modal-box"><h2>利用できません</h2><p>18歳未満の方はこのサイトを利用できません。</p></section></main>';
+    });
     document.getElementById("closeGalleryButton").addEventListener("click", () => {
       galleryModal.classList.remove("active");
     });
@@ -2834,6 +2951,7 @@
 
     updateAmbientImage();
     renderStageCards();
+    showAgeGateIfNeeded();
   </script>
 </body>
 </html>
