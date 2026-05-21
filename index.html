@@ -1209,6 +1209,40 @@
       line-height: 1.55;
     }
 
+    .modal-close {
+      position: absolute;
+      right: 12px;
+      top: 12px;
+      z-index: 2;
+      width: 36px;
+      height: 36px;
+      min-width: 0;
+      min-height: 0;
+      padding: 0;
+      border: 1px solid #d3dce8;
+      border-radius: 50%;
+      background: #fff;
+      color: #445064;
+      font-size: 1.2rem;
+      line-height: 1;
+      box-shadow: 0 8px 18px rgba(23,32,45,.12);
+    }
+
+    .age-box .age-sub {
+      margin: -4px 0 16px;
+      color: #667080;
+      font-size: .9rem;
+      font-weight: 750;
+    }
+
+    .age-box .button-sub {
+      display: block;
+      margin-top: 2px;
+      font-size: .72rem;
+      font-weight: 800;
+      opacity: .78;
+    }
+
     .modal-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1551,12 +1585,8 @@
         <button id="galleryButton" class="image-button gallery" type="button">ギャラリー</button>
       </div>
       <div class="title-notices">
-        <span>18歳以上対象</span>
-        <span>画像は生成AIを使用</span>
-        <a class="notice-link" href="about.html">ゲーム紹介</a>
-        <a class="notice-link" href="terms.html">利用規約</a>
-        <a class="notice-link" href="privacy.html">プライバシー</a>
-        <button id="policyButton" class="notice-link" type="button">利用規約・プライバシー</button>
+        <span>18+ / AI-generated artwork</span>
+        <button id="policyButton" class="notice-link" type="button">案内 / Info</button>
       </div>
       <div class="ad-slot title-ad" aria-label="広告">
         <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
@@ -1642,33 +1672,41 @@
 
   <div id="ageGateModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle">
     <div class="modal-box age-box">
-      <h2 id="ageGateTitle">18歳以上確認</h2>
-      <p>このゲームには成人向けの表現を含む画像が表示されます。18歳未満の方は利用できません。</p>
-      <p>画像は生成AIを使用しています。登場人物は全員18歳以上の設定です。</p>
+      <h2 id="ageGateTitle">18歳以上ですか？</h2>
+      <p class="age-sub">Are you 18 or older?</p>
       <div class="modal-actions">
-        <button id="leaveAgeGateButton" class="danger" type="button">退出する</button>
-        <button id="confirmAgeButton" class="primary" type="button">18歳以上です</button>
+        <button id="leaveAgeGateButton" class="danger" type="button">いいえ<span class="button-sub">No</span></button>
+        <button id="confirmAgeButton" class="primary" type="button">はい<span class="button-sub">Yes, I am 18+</span></button>
       </div>
     </div>
   </div>
 
   <div id="policyModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="policyTitle">
     <div class="modal-box policy-box">
+      <button id="policyXButton" class="modal-close" type="button" aria-label="閉じる">×</button>
       <h2 id="policyTitle">利用規約・プライバシー</h2>
+      <h3>案内 / Info</h3>
+      <p>このゲームは18歳以上向けのブラウザパズルです。画像は生成AIを使用しており、登場人物は全員18歳以上の設定です。</p>
+      <p>This is an 18+ browser puzzle game. The artwork is AI-generated, and all depicted characters are intended to be 18 years of age or older.</p>
       <h3>年齢制限</h3>
       <p>本サイトは18歳以上の利用者を対象としています。18歳未満の方は利用できません。</p>
+      <p>This site is intended only for users who are 18 years of age or older.</p>
       <h3>コンテンツについて</h3>
       <ul>
         <li>掲載画像は生成AIを使用しています。</li>
         <li>登場人物は全員18歳以上の設定です。</li>
         <li>実在の人物、団体、事件とは関係ありません。</li>
       </ul>
+      <p>All content is fictional and is not connected to real persons or events.</p>
       <h3>保存データ</h3>
       <p>クリア状況や設定は、お使いのブラウザ内のlocalStorageに保存されます。サーバー側のアカウント保存は行っていません。</p>
+      <p>Game progress and settings are saved locally in your browser using localStorage.</p>
       <h3>広告とアクセス解析</h3>
       <p>将来的に成人向け広告を表示する場合があります。広告配信事業者がCookie等を利用する場合があります。</p>
+      <p>Adult-oriented advertising may be displayed. Advertising providers may use cookies or similar technologies.</p>
       <h3>問い合わせ</h3>
       <p>連絡先は公開先ページまたは運営者プロフィールに掲載します。</p>
+      <p>More details: <a href="about.html">About</a> / <a href="terms.html">Terms</a> / <a href="privacy.html">Privacy</a></p>
       <div class="modal-actions">
         <button id="closePolicyButton" class="primary" type="button">閉じる</button>
       </div>
@@ -1861,7 +1899,7 @@
       const legacyIndex = index - legacyStageOffset;
       const sceneIndex = index < legacyStageOffset ? index : legacyIndex;
       const scene = sceneSets[sceneIndex % sceneSets.length];
-      const regions = makeRegions(size, index + 11);
+      const regions = makeStageRegions(size, index);
       const values = makeValues(size, index + 3);
       const solution = makeSolution(size, regions, index + 5);
       return {
@@ -1895,6 +1933,48 @@
         mishap: scene[6],
         imageIndex: getStageImageIndex(index)
       };
+    }
+
+    function makeStageRegions(size, index) {
+      if (index < 5) return smallStageRegions4(index === 4 ? 3 : 4);
+      if (index >= 5 && index < 10) return smallStageRegions5(index === 9 ? 4 : 5);
+      return makeRegions(size, index + 11);
+    }
+
+    function smallStageRegions4(count) {
+      if (count === 3) {
+        return [
+          [0,0,1,1],
+          [0,0,1,1],
+          [0,2,2,1],
+          [2,2,2,1]
+        ];
+      }
+      return [
+        [0,0,1,1],
+        [0,0,1,1],
+        [2,2,3,3],
+        [2,2,3,3]
+      ];
+    }
+
+    function smallStageRegions5(count) {
+      if (count === 4) {
+        return [
+          [0,0,0,1,1],
+          [0,2,2,1,1],
+          [0,2,2,2,1],
+          [3,3,2,1,1],
+          [3,3,3,3,1]
+        ];
+      }
+      return [
+        [0,0,0,1,1],
+        [0,0,2,1,1],
+        [3,2,2,2,1],
+        [3,3,2,4,4],
+        [3,3,4,4,4]
+      ];
     }
 
     function makeRegions(size, seed) {
@@ -2976,6 +3056,9 @@
       policyModal.classList.add("active");
     });
     document.getElementById("closePolicyButton").addEventListener("click", () => {
+      policyModal.classList.remove("active");
+    });
+    document.getElementById("policyXButton").addEventListener("click", () => {
       policyModal.classList.remove("active");
     });
     document.getElementById("confirmAgeButton").addEventListener("click", () => {
