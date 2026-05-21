@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Tetesum is an 18+ browser puzzle game with number-sum area puzzles and unlockable AI-generated adult-themed artwork." />
   <title>緊縛エリアナンプレ</title>
   <style>
     :root {
@@ -1353,6 +1354,15 @@
       background: #f4f6fb;
       position: relative;
       overflow: hidden;
+      cursor: zoom-in;
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+
+    .gallery-item.expanded {
+      grid-column: 1 / -1;
+      height: min(72dvh, 720px);
+      cursor: zoom-out;
+      box-shadow: 0 18px 44px rgba(23,32,45,.20);
     }
 
     .gallery-item img {
@@ -1543,6 +1553,9 @@
       <div class="title-notices">
         <span>18歳以上対象</span>
         <span>画像は生成AIを使用</span>
+        <a class="notice-link" href="about.html">ゲーム紹介</a>
+        <a class="notice-link" href="terms.html">利用規約</a>
+        <a class="notice-link" href="privacy.html">プライバシー</a>
         <button id="policyButton" class="notice-link" type="button">利用規約・プライバシー</button>
       </div>
       <div class="ad-slot title-ad" aria-label="広告">
@@ -1705,7 +1718,9 @@
       ["星の塔", "#13213c", "#8b6b8f", "#33284f", "#f1c45e", "#df8fb1", "books"],
       ["虹の空", "#87c8ff", "#80bd78", "#6b4a3b", "#f5a6be", "#72b6e6", "balloons"]
     ];
-    const sizes = [6,6,7,7,8,8,9,9,10,10,6,7,8,9,10,6,7,8,9,10,20];
+    const legacyStageOffset = 10;
+    const legacyStageCount = 21;
+    const sizes = [4,4,4,4,4,5,5,5,5,5,6,6,7,7,8,8,9,9,10,10,6,7,8,9,10,6,7,8,9,10,20];
 
     const stageCache = Array(sizes.length).fill(null);
 
@@ -1757,6 +1772,7 @@
     const galleryModal = document.getElementById("galleryModal");
     const galleryGrid = document.getElementById("galleryGrid");
     const storageKey = "sumAreaPuzzleCompletedStages";
+    const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
     const settings = loadSettings();
@@ -1837,14 +1853,20 @@
     let tutorialStep = 0;
     let tutorialDemoTimer = null;
 
+    function getStageImageIndex(index) {
+      return index < legacyStageOffset ? index + legacyStageCount : index - legacyStageOffset;
+    }
+
     function makeStage(size, index) {
-      const scene = sceneSets[index % sceneSets.length];
+      const legacyIndex = index - legacyStageOffset;
+      const sceneIndex = index < legacyStageOffset ? index : legacyIndex;
+      const scene = sceneSets[sceneIndex % sceneSets.length];
       const regions = makeRegions(size, index + 11);
       const values = makeValues(size, index + 3);
       const solution = makeSolution(size, regions, index + 5);
       return {
         name: `${scene[0]} ${size}×${size}`,
-        displayName: index === 20 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
+        displayName: index === sizes.length - 1 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
         size,
         regions,
         regionCount: Math.max(...regions.flat()) + 1,
@@ -1852,7 +1874,7 @@
         solution,
         scene: scene.slice(1, 6),
         mishap: scene[6],
-        imageIndex: index
+        imageIndex: getStageImageIndex(index)
       };
     }
 
@@ -1862,14 +1884,16 @@
     }
 
     function makeStagePreview(index) {
-      const scene = sceneSets[index % sceneSets.length];
+      const legacyIndex = index - legacyStageOffset;
+      const sceneIndex = index < legacyStageOffset ? index : legacyIndex;
+      const scene = sceneSets[sceneIndex % sceneSets.length];
       const size = sizes[index];
       return {
-        displayName: index === 20 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
+        displayName: index === sizes.length - 1 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
         size,
         scene: scene.slice(1, 6),
         mishap: scene[6],
-        imageIndex: index
+        imageIndex: getStageImageIndex(index)
       };
     }
 
@@ -2081,15 +2105,22 @@
         "assets/tetesum/18.jpg",
         "assets/tetesum/19.jpg",
         "assets/tetesum/20.jpg",
-        "assets/tetesum/21.jpg"
+        "assets/tetesum/21.jpg",
+        "assets/tetesum/22.jpg",
+        "assets/tetesum/23.jpg",
+        "assets/tetesum/24.jpg",
+        "assets/tetesum/25.jpg",
+        "assets/tetesum/26.jpg",
+        "assets/tetesum/27.jpg",
+        "assets/tetesum/28.jpg"
       ];
       return catImages[(stage.imageIndex || 0) % catImages.length];
     }
 
     function pickAmbientImage() {
       const unlockedImages = [...completedStages]
-        .filter(index => index >= 0 && index < 21)
-        .map(index => `assets/tetesum/${index + 1}.jpg`);
+        .filter(index => index >= 0 && index < sizes.length)
+        .map(index => makePuzzleImagePath(makeStagePreview(index)));
       const choices = ambientBaseImages.concat(unlockedImages);
       return choices[Math.floor(Math.random() * choices.length)] || ambientBaseImages[0];
     }
@@ -2842,7 +2873,16 @@
     function loadCompletedStages() {
       try {
         const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
-        return new Set(Array.isArray(parsed) ? parsed : []);
+        const list = Array.isArray(parsed) ? parsed : [];
+        if (localStorage.getItem(stageMigrationKey) !== "done") {
+          const migrated = list
+            .filter(index => Number.isInteger(index) && index >= 0 && index < legacyStageCount)
+            .map(index => index + legacyStageOffset);
+          localStorage.setItem(storageKey, JSON.stringify([...new Set(migrated)].sort((a, b) => a - b)));
+          localStorage.setItem(stageMigrationKey, "done");
+          return new Set(migrated);
+        }
+        return new Set(list);
       } catch {
         return new Set();
       }
@@ -2879,6 +2919,17 @@
         const label = document.createElement("span");
         label.textContent = index + 1;
         item.append(img, label);
+        item.addEventListener("click", () => {
+          const wasExpanded = item.classList.contains("expanded");
+          galleryGrid.querySelectorAll(".gallery-item.expanded").forEach(openItem => {
+            if (openItem !== item) openItem.classList.remove("expanded");
+          });
+          item.classList.toggle("expanded", !wasExpanded);
+          requestAnimationFrame(() => {
+            fitGallery();
+            if (!wasExpanded) item.scrollIntoView({ block: "nearest", behavior: "smooth" });
+          });
+        });
         galleryGrid.append(item);
       });
       fitGallery();
