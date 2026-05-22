@@ -2049,20 +2049,7 @@
     const stageImagePaths = stagePlan.map((stage, index) =>
       stage.ex ? `assets/tetesum/EX${stage.ex}.jpg` : `assets/tetesum/${index + 1}.jpg`
     );
-    const ambientExtraImages = [
-      "assets/tetesum/31.jpg",
-      "assets/tetesum/32.jpg",
-      "assets/tetesum/33.jpg",
-      "assets/tetesum/34.jpg",
-      "assets/tetesum/35.jpg",
-      "assets/tetesum/36.jpg",
-      "assets/tetesum/37.jpg",
-      "assets/tetesum/38.jpg",
-      "assets/tetesum/39.jpg",
-      "assets/tetesum/40.jpg",
-      "assets/tetesum/41.jpg",
-      "assets/tetesum/a2fd3deb-7d22-4447-8b00-0419a186403d.jpg"
-    ];
+    const ambientExtraImages = Array.from({ length: 10 }, (_, index) => `assets/tetesum/${index + 1}.jpg`);
 
     const stageCache = Array(sizes.length).fill(null);
 
@@ -2131,7 +2118,8 @@
     const hintAdZoneId = "5932074";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
-    const ambientBaseImages = ambientExtraImages.concat(stageImagePaths.slice(-7));
+    const ambientBaseImages = ambientExtraImages;
+    let ambientImage = null;
     let forceClearTimer = null;
     let hintAdTimer = null;
     let hintAnimationTimer = null;
@@ -2352,6 +2340,65 @@
 
     function makeRegions(size, seed, requestedRegionCount) {
       const regionCount = Math.max(1, Math.min(requestedRegionCount, Math.floor((size * size) / 5)));
+      for (let attempt = 0; attempt < 18; attempt++) {
+        const regions = growTargetRegions(size, seed + attempt * 37, regionCount);
+        if (regions) return regions;
+      }
+      return makePathFallbackRegions(size, seed, regionCount);
+    }
+
+    function growTargetRegions(size, seed, regionCount) {
+      const targets = makeRegionSizes(size * size, regionCount, seed);
+      const regions = Array.from({ length: size }, () => Array(size).fill(-1));
+      const counts = Array(regionCount).fill(0);
+      const seeds = [];
+
+      for (let id = 0; id < regionCount; id++) {
+        let best = null;
+        for (let attempt = 0; attempt < size * size; attempt++) {
+          const r = (seed * 7 + id * 11 + attempt * 3) % size;
+          const c = (seed * 5 + id * 13 + attempt * 4) % size;
+          if (regions[r][c] !== -1) continue;
+          const score = seeds.reduce((min, point) => Math.min(min, Math.abs(point.r - r) + Math.abs(point.c - c)), Infinity);
+          if (!best || score > best.score) best = { r, c, score };
+        }
+        if (!best) return null;
+        regions[best.r][best.c] = id;
+        counts[id] = 1;
+        seeds.push(best);
+      }
+
+      let remaining = size * size - regionCount;
+      while (remaining > 0) {
+        let changed = false;
+        const order = Array.from({ length: regionCount }, (_, id) => id)
+          .sort((a, b) => regionNoise(remaining, a, a, seed) - regionNoise(remaining, b, b, seed));
+        for (const id of order) {
+          if (counts[id] >= targets[id] || remaining <= 0) continue;
+          const frontier = [];
+          for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+              if (regions[r][c] !== id) continue;
+              for (const [nr, nc] of neighbors(r, c, size)) {
+                if (regions[nr][nc] === -1) frontier.push([nr, nc]);
+              }
+            }
+          }
+          if (!frontier.length) continue;
+          frontier.sort((a, b) => regionNoise(a[0], a[1], id, seed) - regionNoise(b[0], b[1], id, seed));
+          const [r, c] = frontier[0];
+          regions[r][c] = id;
+          counts[id]++;
+          remaining--;
+          changed = true;
+        }
+        if (!changed) return null;
+      }
+
+      return regions;
+    }
+
+    function makePathFallbackRegions(size, seed, regionCount) {
       const regions = Array.from({ length: size }, () => Array(size).fill(-1));
       const path = makeRegionPath(size, seed);
       const sizes = makeRegionSizes(size * size, regionCount, seed);
@@ -2641,6 +2688,25 @@
       return stageImagePaths[stageImagePaths.length - 1];
     }
 
+    function makeTinyGalleryThumb(index) {
+      const hue = (index * 47) % 360;
+      return `data:image/svg+xml,${encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+              <stop stop-color="hsl(${hue}, 85%, 82%)"/>
+              <stop offset=".55" stop-color="hsl(${(hue + 60) % 360}, 78%, 88%)"/>
+              <stop offset="1" stop-color="hsl(${(hue + 145) % 360}, 72%, 84%)"/>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="320" rx="18" fill="url(#g)"/>
+          <path d="M42 230c62-50 112-50 172 0 34 28 58 26 94-2v92H42z" fill="rgba(255,255,255,.42)"/>
+          <circle cx="246" cy="72" r="34" fill="rgba(255,255,255,.46)"/>
+          <text x="160" y="176" text-anchor="middle" font-family="Segoe UI, sans-serif" font-size="82" font-weight="900" fill="rgba(255,255,255,.74)">${stageNumberLabel(index)}</text>
+        </svg>
+      `)}`;
+    }
+
     function pickAmbientImage() {
       const unlockedImages = [...completedStages]
         .filter(index => index >= 0 && index < sizes.length && stageHasImage(index))
@@ -2650,7 +2716,8 @@
     }
 
     function updateAmbientImage() {
-      const image = `url("${pickAmbientImage()}")`;
+      if (!ambientImage) ambientImage = pickAmbientImage();
+      const image = `url("${ambientImage}")`;
       titleScreen.style.setProperty("--ambient-image", image);
       stageScreen.style.setProperty("--ambient-image", image);
     }
@@ -3450,7 +3517,6 @@
       if (completedStages.has(index)) return;
       completedStages.add(index);
       saveCompletedStages();
-      updateAmbientImage();
       renderStageCards();
     }
 
@@ -3466,10 +3532,12 @@
         if (!stage) return;
         const item = document.createElement("div");
         item.className = "gallery-item";
+        item.dataset.fullSrc = makePuzzleImagePath(stage);
         const img = document.createElement("img");
-        img.src = makePuzzleImagePath(stage);
+        img.src = makeTinyGalleryThumb(index);
         img.alt = `${stageNumberLabel(index)}の解放画像`;
         img.loading = "lazy";
+        img.decoding = "async";
         const label = document.createElement("span");
         label.textContent = stageNumberLabel(index);
         item.append(img, label);
@@ -3479,6 +3547,7 @@
             if (openItem !== item) openItem.classList.remove("expanded");
           });
           item.classList.toggle("expanded", !wasExpanded);
+          if (!wasExpanded && img.src !== item.dataset.fullSrc) img.src = item.dataset.fullSrc;
           requestAnimationFrame(() => {
             fitGallery();
             if (!wasExpanded) item.scrollIntoView({ block: "nearest", behavior: "smooth" });
