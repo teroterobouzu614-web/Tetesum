@@ -1863,8 +1863,8 @@
   <div id="hintAdModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="hintAdTitle">
     <div class="modal-box">
       <h2 id="hintAdTitle">広告</h2>
-      <p>30秒後にヒントを見られます。</p>
-      <div id="hintCountdown" class="hint-countdown">30</div>
+      <p>広告のあとにヒントを見られます。</p>
+      <div id="hintCountdown" class="hint-countdown">5</div>
       <div id="hintAdSlot" class="ad-slot" aria-label="ヒント広告"></div>
       <div class="modal-actions">
         <button id="closeHintAdButton" class="primary" type="button" disabled>閉じる</button>
@@ -2038,6 +2038,7 @@
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
+    const hintAdZoneId = "5931940";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = ambientExtraImages.concat(stageImagePaths.slice(-7));
@@ -3386,7 +3387,7 @@
       hintAdModal.classList.remove("active");
       closeHintAdButton.disabled = false;
       closeHintAdButton.textContent = "閉じる";
-      hintCountdown.textContent = "30";
+      hintCountdown.textContent = "5";
     }
 
     function pickHintCell() {
@@ -3436,9 +3437,9 @@
       hintAdModal.classList.add("active");
       closeHintAdButton.disabled = true;
       closeHintAdButton.textContent = "閉じる";
-      let remaining = 30;
+      let remaining = 5;
       hintCountdown.textContent = String(remaining);
-      hintAdSlot.innerHTML = '<ins class="eas6a97888e2" data-zoneid="5931226"></ins>';
+      hintAdSlot.innerHTML = `<ins class="eas6a97888e6" data-zoneid="${hintAdZoneId}"></ins>`;
       try {
         (window.AdProvider = window.AdProvider || []).push({ serve: {} });
       } catch {}
