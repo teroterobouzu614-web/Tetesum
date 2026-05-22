@@ -278,20 +278,6 @@
       font-size: .86rem;
     }
 
-    .review-links {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px 14px;
-      width: 100%;
-    }
-
-    .review-links a {
-      color: #344054;
-      font-weight: 850;
-      text-decoration: underline;
-    }
-
     .ad-slot {
       display: grid;
       place-items: center;
@@ -922,7 +908,7 @@
     .hp-bar {
       --hp-fill: 100%;
       width: min(34vw, 132px);
-      height: 20px;
+      height: 28px;
       display: block;
       position: relative;
       overflow: hidden;
@@ -936,6 +922,7 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
+      touch-action: none;
     }
 
     .hp-bar::before {
@@ -1388,21 +1375,6 @@
       font-weight: 750;
     }
 
-    .age-links {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px 14px;
-      margin: 0 0 16px;
-      font-size: .86rem;
-      font-weight: 850;
-    }
-
-    .age-links a {
-      color: #344054;
-      text-decoration: underline;
-    }
-
     .age-box .button-sub {
       display: block;
       margin-top: 2px;
@@ -1594,6 +1566,20 @@
       height: 100%;
       object-fit: contain;
       padding: 6px;
+    }
+
+    .gallery-item.loading::after {
+      content: "読み込み中";
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      color: #344054;
+      font-size: .78rem;
+      font-weight: 900;
+      box-shadow: 0 4px 12px rgba(23,32,45,.12);
     }
 
     .gallery-item span {
@@ -1822,11 +1808,6 @@
       <div class="title-notices">
         <span>18+ / AI-generated artwork</span>
         <button id="policyButton" class="notice-link" type="button">案内 / Info</button>
-        <nav class="review-links" aria-label="審査用リンク">
-          <a href="about.html">Game Info</a>
-          <a href="terms.html">Terms</a>
-          <a href="privacy.html">Privacy</a>
-        </nav>
       </div>
       <div id="titleAdSlot" class="ad-slot title-ad" aria-label="広告"></div>
     </section>
@@ -1931,11 +1912,6 @@
     <div class="modal-box age-box">
       <h2 id="ageGateTitle">18歳以上ですか？</h2>
       <p class="age-sub">Are you 18 or older?</p>
-      <nav class="age-links" aria-label="サイト情報">
-        <a href="about.html">Game Info</a>
-        <a href="terms.html">Terms</a>
-        <a href="privacy.html">Privacy</a>
-      </nav>
       <div class="modal-actions">
         <button id="leaveAgeGateButton" class="danger" type="button">いいえ<span class="button-sub">No</span></button>
         <button id="confirmAgeButton" class="primary" type="button">はい<span class="button-sub">Yes, I am 18+</span></button>
@@ -1968,7 +1944,6 @@
       <p>Adult-oriented advertising may be displayed. Advertising providers may use cookies or similar technologies.</p>
       <h3>問い合わせ</h3>
       <p>連絡先は公開先ページまたは運営者プロフィールに掲載します。</p>
-      <p>More details: <a href="about.html">About</a> / <a href="terms.html">Terms</a> / <a href="privacy.html">Privacy</a></p>
       <div class="modal-actions">
         <button id="closePolicyButton" class="primary" type="button">閉じる</button>
       </div>
@@ -2007,8 +1982,8 @@
   </div>
 
   <script>
-    const palette = ["#ffdca8", "#f7a4c9", "#a8dcfa", "#fff4a8", "#d7c2ff", "#c8f0b6", "#ffc8a8", "#bfe8ff", "#f5b4da", "#fff0b8", "#bfe7d6", "#e4ceff", "#ffcfd0", "#cce5ff", "#f8d7a4", "#d8f7be", "#f4b8c8", "#b9d8ff", "#fbe4a8", "#d0f0ee"];
-    const areaPalette = ["#ffd166", "#55cde9", "#f471b5", "#83d56b", "#ff8a4c", "#7c83ff", "#b17cff", "#b7dc4b"];
+    const palette = ["#f6ddb2", "#edb8d1", "#b7daf0", "#f7efb4", "#d8c8f0", "#c9e8bd", "#f0c3ad", "#c5e2f0", "#edbed9", "#f4e8ba", "#c8e2d8", "#ddcdf0", "#f0c3c5", "#c9dff1", "#ecd2ad", "#d2ecc1", "#e8bdc9", "#bfd5f0", "#f0dfa9", "#cae5e3"];
+    const areaPalette = ["#eaa83a", "#35aeda", "#d85b9d", "#68bd55", "#e9783d", "#6870df", "#9b61d6", "#9fba36", "#e45262", "#2ebd9a", "#cf8fdd", "#58a85f", "#d9b538", "#4e97d8", "#d36f55", "#7fbf3f"];
     const sceneSets = [
       ["朝の庭", "#a7d8ff", "#78b46d", "#7d513e", "#f3b2a4", "#f7d35f", "watering"],
       ["港の夕暮れ", "#f6a66f", "#3d7890", "#30435b", "#d86e72", "#f2ca78", "wind"],
@@ -2045,6 +2020,7 @@
     const ambientExtraImages = Array.from({ length: 10 }, (_, index) => `assets/tetesum/${index + 1}.jpg`);
 
     const stageCache = Array(sizes.length).fill(null);
+    const stageLayoutSignatures = new Set();
 
     const state = {
       stageIndex: 0,
@@ -2212,6 +2188,7 @@
       const sceneIndex = plan.ex ? normalStageCount + plan.ex : index;
       const scene = sceneSets[sceneIndex % sceneSets.length];
       const regions = makeStageRegions(size, index, plan.regionCount);
+      stageLayoutSignatures.add(canonicalStageLayoutSignature(regions, size));
       const values = makeValues(size, index + 3);
       const solution = makeSolution(size, regions, index + 5);
       const regionColors = assignRegionColors(regions, Math.max(...regions.flat()) + 1, size, index);
@@ -2231,7 +2208,9 @@
     }
 
     function getStage(index) {
-      if (!stageCache[index]) stageCache[index] = makeStage(sizes[index], index);
+      for (let i = 0; i <= index; i++) {
+        if (!stageCache[i]) stageCache[i] = makeStage(sizes[i], i);
+      }
       return stageCache[index];
     }
 
@@ -2256,7 +2235,7 @@
     }
 
     function makeStageRegions(size, index, regionCount) {
-      return makeRegions(size, index + 11, regionCount);
+      return makeRegions(size, index + 11, regionCount, stageLayoutSignatures);
     }
 
     function smallStageRegions4(variant) {
@@ -2336,13 +2315,225 @@
       return patterns[variant % patterns.length];
     }
 
-    function makeRegions(size, seed, requestedRegionCount) {
+    function makeRegions(size, seed, requestedRegionCount, usedLayoutSignatures = new Set()) {
       const regionCount = Math.max(1, Math.min(requestedRegionCount, Math.floor((size * size) / 5)));
-      for (let attempt = 0; attempt < 18; attempt++) {
-        const regions = growTargetRegions(size, seed + attempt * 37, regionCount);
-        if (regions) return regions;
+      let bestWarpedRegions = null;
+      let bestWarpedScore = -Infinity;
+      const warpedAttempts = size <= 5 ? 36 : size <= 10 ? 54 : 28;
+      for (let attempt = 0; attempt < warpedAttempts; attempt++) {
+        const regions = makeWarpedVoronoiRegions(size, seed + attempt * 61, regionCount);
+        if (!regions) continue;
+        diversifyRegionEdges(regions, regionCount, size, seed + attempt * 61);
+        const score = regionComplexityScore(regions, regionCount, size) - repeatedLayoutPenalty(regions, size, usedLayoutSignatures);
+        if (score > bestWarpedScore) {
+          bestWarpedScore = score;
+          bestWarpedRegions = regions;
+        }
+        if (bestWarpedRegions && !usedLayoutSignatures.has(canonicalStageLayoutSignature(bestWarpedRegions, size)) && bestWarpedScore > -200) break;
       }
-      return makePathFallbackRegions(size, seed, regionCount);
+      if (bestWarpedRegions && !layoutAlreadyUsed(bestWarpedRegions, size, usedLayoutSignatures)) return bestWarpedRegions;
+
+      let bestRegions = null;
+      let bestScore = -Infinity;
+      const attempts = size <= 5 ? 28 : size <= 10 ? 34 : 16;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        const regions = growTargetRegions(size, seed + attempt * 37, regionCount);
+        if (!regions) continue;
+        diversifyRegionEdges(regions, regionCount, size, seed + attempt * 37);
+        const score = regionComplexityScore(regions, regionCount, size) - repeatedLayoutPenalty(regions, size, usedLayoutSignatures);
+        if (score > bestScore) {
+          bestScore = score;
+          bestRegions = regions;
+        }
+      }
+      if (bestRegions && !layoutAlreadyUsed(bestRegions, size, usedLayoutSignatures)) return bestRegions;
+
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const fallbackSeed = seed + attempt * 97;
+        const regions = makeHilbertRegions(size, fallbackSeed, regionCount) || makePathFallbackRegions(size, fallbackSeed, regionCount);
+        if (!layoutAlreadyUsed(regions, size, usedLayoutSignatures)) return regions;
+      }
+
+      return bestWarpedRegions || bestRegions || makePathFallbackRegions(size, seed + 7919, regionCount);
+    }
+
+    function repeatedLayoutPenalty(regions, size, usedLayoutSignatures) {
+      return usedLayoutSignatures.has(canonicalStageLayoutSignature(regions, size)) ? 100000 : 0;
+    }
+
+    function layoutAlreadyUsed(regions, size, usedLayoutSignatures) {
+      return usedLayoutSignatures.has(canonicalStageLayoutSignature(regions, size));
+    }
+
+    function canonicalStageLayoutSignature(regions, size) {
+      const transforms = [
+        (r, c) => [r, c],
+        (r, c) => [r, size - 1 - c],
+        (r, c) => [size - 1 - r, c],
+        (r, c) => [size - 1 - r, size - 1 - c],
+        (r, c) => [c, r],
+        (r, c) => [c, size - 1 - r],
+        (r, c) => [size - 1 - c, r],
+        (r, c) => [size - 1 - c, size - 1 - r]
+      ];
+
+      return transforms.map(transform => {
+        const map = new Map();
+        let next = 0;
+        const rows = [];
+        for (let r = 0; r < size; r++) {
+          const row = [];
+          for (let c = 0; c < size; c++) {
+            const [sourceR, sourceC] = transform(r, c);
+            const id = regions[sourceR][sourceC];
+            if (!map.has(id)) map.set(id, next++);
+            row.push(map.get(id).toString(36));
+          }
+          rows.push(row.join(""));
+        }
+        return rows.join("/");
+      }).sort()[0];
+    }
+
+    function makeWarpedVoronoiRegions(size, seed, regionCount) {
+      const seeds = chooseWarpSeeds(size, seed, regionCount);
+      if (seeds.length < regionCount) return null;
+
+      const regions = Array.from({ length: size }, () => Array(size).fill(-1));
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          let bestId = 0;
+          let bestScore = Infinity;
+          for (let id = 0; id < regionCount; id++) {
+            const point = seeds[id];
+            const manhattan = Math.abs(point.r - r) + Math.abs(point.c - c);
+            const euclid = Math.hypot(point.r - r, point.c - c);
+            const warp =
+              regionNoise(r, c, id, seed) * 2.4 +
+              regionNoise(r + id * 2, c - id, id, seed + 17) * 1.2 +
+              regionNoise(Math.floor((r + point.r) / 2), Math.floor((c + point.c) / 2), id, seed + 29) * 1.5;
+            const score = manhattan + euclid * .38 + warp;
+            if (score < bestScore) {
+              bestScore = score;
+              bestId = id;
+            }
+          }
+          regions[r][c] = bestId;
+        }
+      }
+
+      if (!allRegionsConnected(regions, regionCount, size)) return null;
+      if (countRegions(regions, regionCount, size).some(count => count < 5)) return null;
+      return regions;
+    }
+
+    function chooseWarpSeeds(size, seed, regionCount) {
+      const regions = Array.from({ length: size }, () => Array(size).fill(-1));
+      const seeds = [];
+      for (let id = 0; id < regionCount; id++) {
+        const best = chooseRegionSeed(regions, seeds, size, seed, id);
+        if (!best) break;
+        regions[best.r][best.c] = id;
+        seeds.push(best);
+      }
+      return seeds;
+    }
+
+    function makeHilbertRegions(size, seed, regionCount) {
+      const path = makeHilbertPath(size, seed);
+      if (path.length !== size * size) return null;
+
+      const regions = Array.from({ length: size }, () => Array(size).fill(-1));
+      const sizes = makeRegionSizes(size * size, regionCount, seed);
+      let pathIndex = 0;
+      sizes.forEach((area, id) => {
+        for (let i = 0; i < area; i++) {
+          const [r, c] = path[pathIndex++];
+          regions[r][c] = id;
+        }
+      });
+
+      return allRegionsConnected(regions, regionCount, size) ? regions : null;
+    }
+
+    function makeHilbertPath(size, seed) {
+      const order = nextPowerOfTwo(size);
+      const path = [];
+      for (let index = 0; index < order * order; index++) {
+        let [r, c] = hilbertIndexToCell(order, index);
+        const turn = seed % 4;
+        if (turn === 1) [r, c] = [c, size - 1 - r];
+        else if (turn === 2) [r, c] = [size - 1 - r, size - 1 - c];
+        else if (turn === 3) [r, c] = [size - 1 - c, r];
+        if (r >= 0 && r < size && c >= 0 && c < size) path.push([r, c]);
+      }
+      if (seed % 8 >= 4) path.reverse();
+      return path;
+    }
+
+    function nextPowerOfTwo(value) {
+      let power = 1;
+      while (power < value) power *= 2;
+      return power;
+    }
+
+    function hilbertIndexToCell(order, index) {
+      let x = 0;
+      let y = 0;
+      let cursor = index;
+      for (let scale = 1; scale < order; scale *= 2) {
+        const rx = 1 & Math.floor(cursor / 2);
+        const ry = 1 & (cursor ^ rx);
+        [x, y] = rotateHilbertCell(scale, x, y, rx, ry);
+        x += scale * rx;
+        y += scale * ry;
+        cursor = Math.floor(cursor / 4);
+      }
+      return [y, x];
+    }
+
+    function rotateHilbertCell(size, x, y, rx, ry) {
+      if (ry !== 0) return [x, y];
+      if (rx === 1) {
+        x = size - 1 - x;
+        y = size - 1 - y;
+      }
+      return [y, x];
+    }
+
+    function allRegionsConnected(regions, regionCount, size) {
+      for (let id = 0; id < regionCount; id++) {
+        if (!regionIsConnected(regions, id, size)) return false;
+      }
+      return true;
+    }
+
+    function regionIsConnected(regions, id, size) {
+      let start = null;
+      let total = 0;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (regions[r][c] !== id) continue;
+          total++;
+          if (!start) start = [r, c];
+        }
+      }
+      if (!start) return false;
+
+      const seen = Array.from({ length: size }, () => Array(size).fill(false));
+      const stack = [start];
+      seen[start[0]][start[1]] = true;
+      let reached = 0;
+      while (stack.length) {
+        const [r, c] = stack.pop();
+        reached++;
+        for (const [nr, nc] of neighbors(r, c, size)) {
+          if (seen[nr][nc] || regions[nr][nc] !== id) continue;
+          seen[nr][nc] = true;
+          stack.push([nr, nc]);
+        }
+      }
+      return reached === total;
     }
 
     function growTargetRegions(size, seed, regionCount) {
@@ -2352,14 +2543,7 @@
       const seeds = [];
 
       for (let id = 0; id < regionCount; id++) {
-        let best = null;
-        for (let attempt = 0; attempt < size * size; attempt++) {
-          const r = (seed * 7 + id * 11 + attempt * 3) % size;
-          const c = (seed * 5 + id * 13 + attempt * 4) % size;
-          if (regions[r][c] !== -1) continue;
-          const score = seeds.reduce((min, point) => Math.min(min, Math.abs(point.r - r) + Math.abs(point.c - c)), Infinity);
-          if (!best || score > best.score) best = { r, c, score };
-        }
+        const best = chooseRegionSeed(regions, seeds, size, seed, id);
         if (!best) return null;
         regions[best.r][best.c] = id;
         counts[id] = 1;
@@ -2383,7 +2567,10 @@
             }
           }
           if (!frontier.length) continue;
-          frontier.sort((a, b) => regionNoise(a[0], a[1], id, seed) - regionNoise(b[0], b[1], id, seed));
+          frontier.sort((a, b) =>
+            frontierCellScore(regions, a[0], a[1], id, size, seed, seeds[id]) -
+            frontierCellScore(regions, b[0], b[1], id, size, seed, seeds[id])
+          );
           const [r, c] = frontier[0];
           regions[r][c] = id;
           counts[id]++;
@@ -2393,7 +2580,220 @@
         if (!changed) return null;
       }
 
+      diversifyRegionEdges(regions, regionCount, size, seed);
       return regions;
+    }
+
+    function diversifyRegionEdges(regions, regionCount, size, seed) {
+      const passes = size <= 5 ? 3 : size <= 10 ? 8 : 12;
+      for (let pass = 0; pass < passes; pass++) {
+        const candidates = [];
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            const source = regions[r][c];
+            const near = new Set();
+            for (const [nr, nc] of neighbors(r, c, size)) {
+              const other = regions[nr][nc];
+              if (other !== source) near.add(other);
+            }
+            near.forEach(target => candidates.push({ r, c, source, target }));
+          }
+        }
+
+        candidates.sort((a, b) =>
+          regionNoise(a.r + pass, a.c, a.target, seed) - regionNoise(b.r + pass, b.c, b.target, seed)
+        );
+
+        const counts = countRegions(regions, regionCount, size);
+        let moves = 0;
+        const moveLimit = Math.max(1, Math.floor(size * size * .38));
+
+        for (const candidate of candidates) {
+          if (moves >= moveLimit) break;
+          const { r, c, source, target } = candidate;
+          if (regions[r][c] !== source || counts[source] <= 5) continue;
+          if (regionNoise(r, c, target, seed) <= regionNoise(r, c, source, seed)) continue;
+          if (!canMoveBoundaryCell(regions, r, c, source, target, size)) continue;
+
+          regions[r][c] = target;
+          counts[source]--;
+          counts[target]++;
+          moves++;
+        }
+
+        if (!moves) break;
+      }
+    }
+
+    function canMoveBoundaryCell(regions, r, c, source, target, size) {
+      let sourceTouch = 0;
+      let targetTouch = 0;
+      let otherTouch = 0;
+      for (const [nr, nc] of neighbors(r, c, size)) {
+        if (regions[nr][nc] === source) sourceTouch++;
+        else if (regions[nr][nc] === target) targetTouch++;
+        else otherTouch++;
+      }
+      if (!targetTouch) return false;
+      if (sourceTouch >= 4) return false;
+      return regionStaysConnectedAfterRemoval(regions, r, c, source, size);
+    }
+
+    function regionStaysConnectedAfterRemoval(regions, removeR, removeC, id, size) {
+      let start = null;
+      let total = 0;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (regions[r][c] !== id || (r === removeR && c === removeC)) continue;
+          total++;
+          if (!start) start = [r, c];
+        }
+      }
+      if (!start) return false;
+
+      const seen = Array.from({ length: size }, () => Array(size).fill(false));
+      const stack = [start];
+      seen[start[0]][start[1]] = true;
+      let reached = 0;
+      while (stack.length) {
+        const [r, c] = stack.pop();
+        reached++;
+        for (const [nr, nc] of neighbors(r, c, size)) {
+          if (seen[nr][nc]) continue;
+          if (nr === removeR && nc === removeC) continue;
+          if (regions[nr][nc] !== id) continue;
+          seen[nr][nc] = true;
+          stack.push([nr, nc]);
+        }
+      }
+      return reached === total;
+    }
+
+    function frontierCellScore(regions, r, c, id, size, seed, anchor) {
+      let same = 0;
+      let other = 0;
+      let empty = 0;
+      for (const [nr, nc] of neighbors(r, c, size)) {
+        if (regions[nr][nc] === id) same++;
+        else if (regions[nr][nc] === -1) empty++;
+        else other++;
+      }
+      const thinPenalty = same <= 1 ? 34 : 0;
+      const blobPenalty = same >= 3 ? 30 : 0;
+      const blockPenalty = sameColoredBlockCount(regions, r, c, id, size) * 44;
+      const edgePenalty = (r === 0 || c === 0 || r === size - 1 || c === size - 1) ? 6 : 0;
+      const anchorPenalty = anchor ? (Math.abs(anchor.r - r) + Math.abs(anchor.c - c)) * 2 : 0;
+      const noise = regionNoise(r, c, id, seed) * 18;
+      return thinPenalty + blobPenalty + blockPenalty + edgePenalty + anchorPenalty - other * 24 - empty * 3 + noise;
+    }
+
+    function sameColoredBlockCount(regions, r, c, id, size) {
+      let count = 0;
+      for (const dr of [-1, 0]) {
+        for (const dc of [-1, 0]) {
+          const r0 = r + dr;
+          const c0 = c + dc;
+          if (r0 < 0 || c0 < 0 || r0 + 1 >= size || c0 + 1 >= size) continue;
+          let same = 0;
+          for (let rr = r0; rr <= r0 + 1; rr++) {
+            for (let cc = c0; cc <= c0 + 1; cc++) {
+              const value = rr === r && cc === c ? id : regions[rr][cc];
+              if (value === id) same++;
+            }
+          }
+          if (same >= 4) count++;
+        }
+      }
+      return count;
+    }
+
+    function regionComplexityScore(regions, regionCount, size) {
+      const adjacency = makeRegionAdjacency(regions, regionCount, size);
+      let boundary = 0;
+      let sameBlocks = 0;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          for (const [nr, nc] of [[r + 1, c], [r, c + 1]]) {
+            if (nr >= size || nc >= size) continue;
+            if (regions[r][c] !== regions[nr][nc]) boundary++;
+          }
+          if (r + 1 < size && c + 1 < size) {
+            const id = regions[r][c];
+            if (regions[r + 1][c] === id && regions[r][c + 1] === id && regions[r + 1][c + 1] === id) sameBlocks++;
+          }
+        }
+      }
+      const contacts = adjacency.reduce((sum, set) => sum + set.size, 0);
+      const shapePenalty = regionShapePenalty(regions, regionCount, size);
+      return boundary * 4 + contacts * 8 - sameBlocks * 13 - shapePenalty;
+    }
+
+    function regionShapePenalty(regions, regionCount, size) {
+      const signatures = new Map();
+      let penalty = 0;
+
+      for (let id = 0; id < regionCount; id++) {
+        const cells = getRegionCellsFromGrid(regions, id, size);
+        if (!cells.length) {
+          penalty += 900;
+          continue;
+        }
+
+        let leafCells = 0;
+        cells.forEach(([r, c]) => {
+          const sameNeighbors = neighbors(r, c, size).filter(([nr, nc]) => regions[nr][nc] === id).length;
+          if (sameNeighbors <= 1) leafCells++;
+        });
+        if (leafCells > Math.max(1, Math.floor(cells.length * .22))) penalty += (leafCells - 1) * 42;
+
+        const rows = cells.map(([r]) => r);
+        const cols = cells.map(([, c]) => c);
+        const height = Math.max(...rows) - Math.min(...rows) + 1;
+        const width = Math.max(...cols) - Math.min(...cols) + 1;
+        const aspect = Math.max(width / height, height / width);
+        if (aspect > 2.35) penalty += Math.round((aspect - 2.35) * cells.length * 36);
+        if ((width <= 2 || height <= 2) && cells.length >= 7) penalty += cells.length * 28;
+
+        const signature = canonicalRegionSignature(cells);
+        if (signatures.has(signature)) penalty += 1400;
+        signatures.set(signature, id);
+      }
+
+      return penalty;
+    }
+
+    function getRegionCellsFromGrid(regions, id, size) {
+      const cells = [];
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (regions[r][c] === id) cells.push([r, c]);
+        }
+      }
+      return cells;
+    }
+
+    function canonicalRegionSignature(cells) {
+      const transforms = [
+        ([r, c]) => [r, c],
+        ([r, c]) => [r, -c],
+        ([r, c]) => [-r, c],
+        ([r, c]) => [-r, -c],
+        ([r, c]) => [c, r],
+        ([r, c]) => [c, -r],
+        ([r, c]) => [-c, r],
+        ([r, c]) => [-c, -r]
+      ];
+      return transforms.map(transform => normalizeRegionCells(cells.map(transform))).sort()[0];
+    }
+
+    function normalizeRegionCells(cells) {
+      const minR = Math.min(...cells.map(([r]) => r));
+      const minC = Math.min(...cells.map(([, c]) => c));
+      return cells
+        .map(([r, c]) => [r - minR, c - minC])
+        .sort((a, b) => a[0] - b[0] || a[1] - b[1])
+        .map(([r, c]) => `${r}:${c}`)
+        .join("|");
     }
 
     function makePathFallbackRegions(size, seed, regionCount) {
@@ -2445,14 +2845,7 @@
       const seeds = [];
 
       for (let id = 0; id < regionCount; id++) {
-        let best = null;
-        for (let attempt = 0; attempt < size * size; attempt++) {
-          const r = (seed * 7 + id * 11 + attempt * 3) % size;
-          const c = (seed * 5 + id * 13 + attempt * 4) % size;
-          if (regions[r][c] !== -1) continue;
-          const score = seeds.reduce((min, point) => Math.min(min, Math.abs(point.r - r) + Math.abs(point.c - c)), Infinity);
-          if (!best || score > best.score) best = { r, c, score };
-        }
+        const best = chooseRegionSeed(regions, seeds, size, seed, id);
         if (!best) break;
         regions[best.r][best.c] = id;
         seeds.push(best);
@@ -2487,6 +2880,22 @@
 
     function neighbors(r, c, size) {
       return [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]].filter(([nr, nc]) => nr >= 0 && nr < size && nc >= 0 && nc < size);
+    }
+
+    function chooseRegionSeed(regions, seeds, size, seed, id) {
+      let best = null;
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (regions[r][c] !== -1) continue;
+          const distance = seeds.length
+            ? seeds.reduce((min, point) => Math.min(min, Math.abs(point.r - r) + Math.abs(point.c - c)), Infinity)
+            : size;
+          const edgeSpace = Math.min(r, c, size - 1 - r, size - 1 - c);
+          const score = distance + edgeSpace * .11 + regionNoise(r, c, id, seed) * .42;
+          if (!best || score > best.score) best = { r, c, score };
+        }
+      }
+      return best;
     }
 
     function regionNoise(r, c, id, seed) {
@@ -2585,7 +2994,7 @@
       const adjacency = makeRegionAdjacency(regions, regionCount, size);
       const order = Array.from({ length: regionCount }, (_, id) => id)
         .sort((a, b) => adjacency[b].size - adjacency[a].size || a - b);
-      const shiftedPalette = areaPalette.map((_, index) => areaPalette[(index + seed * 3) % areaPalette.length]);
+      const shiftedPalette = makeExpandedAreaPalette(regionCount, seed);
       const assigned = Array(regionCount).fill(null);
 
       order.forEach(id => {
@@ -2596,7 +3005,7 @@
           const neighborScore = neighborColors.length
             ? Math.min(...neighborColors.map(neighborColor => colorDistance(color, neighborColor)))
             : 180;
-          const repeatPenalty = assigned.includes(color) ? 18 : 0;
+          const repeatPenalty = assigned.includes(color) ? 260 : 0;
           const tieBreak = ((colorIndex * 17 + id * 11 + seed) % shiftedPalette.length) / 100;
           const score = neighborScore - repeatPenalty + tieBreak;
           if (score > bestScore) {
@@ -2608,6 +3017,30 @@
       });
 
       return assigned;
+    }
+
+    function makeExpandedAreaPalette(regionCount, seed) {
+      const shifted = areaPalette.map((_, index) => areaPalette[(index + seed * 3) % areaPalette.length]);
+      const palette = shifted.slice();
+      let cursor = 0;
+      while (palette.length < regionCount) {
+        const base = shifted[cursor % shifted.length];
+        const variant = Math.floor(cursor / shifted.length) + 1;
+        palette.push(tintHexColor(base, variant % 2 === 1 ? .18 : -.14));
+        cursor++;
+      }
+      return palette;
+    }
+
+    function tintHexColor(color, amount) {
+      const [r, g, b] = parseHexColor(color);
+      const tint = channel => {
+        const next = amount >= 0
+          ? channel + (255 - channel) * amount
+          : channel * (1 + amount);
+        return Math.max(0, Math.min(255, Math.round(next)));
+      };
+      return `#${[tint(r), tint(g), tint(b)].map(value => value.toString(16).padStart(2, "0")).join("")}`;
     }
 
     function makeValues(size, seed) {
@@ -2644,18 +3077,30 @@
       return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
     }
 
-    function softColor(color) {
-      return color;
-    }
-
-    function fadedColor(color) {
+    function parseHexColor(color) {
       const hex = color.replace("#", "");
       const value = hex.length === 3
         ? hex.split("").map(char => char + char).join("")
         : hex;
-      const r = parseInt(value.slice(0, 2), 16);
-      const g = parseInt(value.slice(2, 4), 16);
-      const b = parseInt(value.slice(4, 6), 16);
+      return [
+        parseInt(value.slice(0, 2), 16),
+        parseInt(value.slice(2, 4), 16),
+        parseInt(value.slice(4, 6), 16)
+      ];
+    }
+
+    function mixWithWhite(color, whiteRatio) {
+      const [r, g, b] = parseHexColor(color);
+      const mix = channel => Math.round(channel * (1 - whiteRatio) + 255 * whiteRatio);
+      return `rgb(${mix(r)}, ${mix(g)}, ${mix(b)})`;
+    }
+
+    function softColor(color) {
+      return mixWithWhite(color, .66);
+    }
+
+    function fadedColor(color) {
+      const [r, g, b] = parseHexColor(color);
       return `rgba(${r}, ${g}, ${b}, .46)`;
     }
 
@@ -2684,6 +3129,12 @@
       const index = Number.isInteger(stage.imageIndex) ? stage.imageIndex : 0;
       if (index < stageImagePaths.length) return stageImagePaths[index];
       return stageImagePaths[stageImagePaths.length - 1];
+    }
+
+    function makeGalleryImagePath(index) {
+      const plan = stagePlan[index];
+      const label = plan?.ex ? `EX${plan.ex}` : String(index + 1);
+      return `assets/tetesum/gallery-thumbs/${label}.jpg`;
     }
 
     function makeTinyGalleryThumb(index) {
@@ -3281,7 +3732,7 @@
 
       renderRegionSums();
       updateStatus();
-      if (isSolved() && !state.won) winStage();
+      if (shouldClearStage() && !state.won) winStage();
     }
 
     function isRowAligned(r) {
@@ -3338,6 +3789,14 @@
       return state.decided.every((row, r) =>
         row.every((decided, c) => decided && state.selected[r][c] === state.solution[r][c])
       );
+    }
+
+    function allRegionsRevealed() {
+      return state.regionCount > 0 && state.revealedRegions.slice(0, state.regionCount).every(Boolean);
+    }
+
+    function shouldClearStage() {
+      return isSolved() || allRegionsRevealed();
     }
 
     function forceClearStage() {
@@ -3455,16 +3914,22 @@
     function startForceClearHold(event) {
       event.preventDefault();
       if (state.won || forceClearTimer) return;
+      if (event.pointerId !== undefined && lifeLabel.setPointerCapture) {
+        try { lifeLabel.setPointerCapture(event.pointerId); } catch {}
+      }
       forceClearTimer = window.setTimeout(() => {
         forceClearTimer = null;
         forceClearStage();
       }, 5000);
     }
 
-    function cancelForceClearHold() {
+    function cancelForceClearHold(event) {
       if (!forceClearTimer) return;
       window.clearTimeout(forceClearTimer);
       forceClearTimer = null;
+      if (event?.pointerId !== undefined && lifeLabel.releasePointerCapture) {
+        try { lifeLabel.releasePointerCapture(event.pointerId); } catch {}
+      }
     }
 
     function loadSettings() {
@@ -3532,9 +3997,9 @@
         if (!stage) return;
         const item = document.createElement("div");
         item.className = "gallery-item";
-        item.dataset.fullSrc = makePuzzleImagePath(stage);
+        item.dataset.fullSrc = makeGalleryImagePath(index);
         const img = document.createElement("img");
-        img.src = makeTinyGalleryThumb(index);
+        img.src = item.dataset.fullSrc;
         img.alt = `${stageNumberLabel(index)}の解放画像`;
         img.loading = "lazy";
         img.decoding = "async";
@@ -3547,7 +4012,6 @@
             if (openItem !== item) openItem.classList.remove("expanded");
           });
           item.classList.toggle("expanded", !wasExpanded);
-          if (!wasExpanded && img.src !== item.dataset.fullSrc) img.src = item.dataset.fullSrc;
           requestAnimationFrame(() => {
             fitGallery();
             if (!wasExpanded) item.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -3660,11 +4124,8 @@
       closeHintAdButton.textContent = "閉じる";
       let remaining = 5;
       hintCountdown.textContent = String(remaining);
-      ensureHintAdProvider();
       hintAdSlot.innerHTML = `<ins class="${hintAdClassName}" data-zoneid="${hintAdZoneId}"></ins>`;
-      try {
-        (window.AdProvider = window.AdProvider || []).push({ serve: {} });
-      } catch {}
+      requestAdServe(hintAdProviderSrc);
       clearInterval(hintAdTimer);
       hintAdTimer = setInterval(() => {
         remaining -= 1;
@@ -3695,31 +4156,32 @@
     function renderStandardAd(slot) {
       if (!slot || slot.dataset.adRendered === "true") return;
       slot.dataset.adRendered = "true";
-      ensureStandardAdProvider();
       slot.innerHTML = `<ins class="${standardAdClassName}" data-zoneid="${standardAdZoneId}"></ins>`;
-      requestAnimationFrame(() => {
-        try {
-          (window.AdProvider = window.AdProvider || []).push({ serve: {} });
-        } catch {}
+      requestAdServe(standardAdProviderSrc);
+    }
+
+    function requestAdServe(providerSrc) {
+      ensureAdProvider(providerSrc).finally(() => {
+        requestAnimationFrame(() => {
+          try {
+            (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+          } catch {}
+        });
       });
     }
 
-    function ensureStandardAdProvider() {
-      if (document.querySelector(`script[src="${standardAdProviderSrc}"]`)) return;
-      const script = document.createElement("script");
-      script.async = true;
-      script.type = "application/javascript";
-      script.src = standardAdProviderSrc;
-      document.body.append(script);
-    }
-
-    function ensureHintAdProvider() {
-      if (document.querySelector(`script[src="${hintAdProviderSrc}"]`)) return;
-      const script = document.createElement("script");
-      script.async = true;
-      script.type = "application/javascript";
-      script.src = hintAdProviderSrc;
-      document.body.append(script);
+    function ensureAdProvider(providerSrc) {
+      const existing = document.querySelector(`script[src="${providerSrc}"]`);
+      if (existing) return Promise.resolve();
+      return new Promise(resolve => {
+        const script = document.createElement("script");
+        script.async = true;
+        script.type = "application/javascript";
+        script.src = providerSrc;
+        script.addEventListener("load", resolve, { once: true });
+        script.addEventListener("error", resolve, { once: true });
+        document.body.append(script);
+      });
     }
 
     document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
@@ -3810,7 +4272,6 @@
     eraseTool.addEventListener("click", () => setTool("erase"));
     lifeLabel.addEventListener("pointerdown", startForceClearHold);
     lifeLabel.addEventListener("pointerup", cancelForceClearHold);
-    lifeLabel.addEventListener("pointerleave", cancelForceClearHold);
     lifeLabel.addEventListener("pointercancel", cancelForceClearHold);
     lifeLabel.addEventListener("contextmenu", event => event.preventDefault());
     window.addEventListener("resize", fitBoard);
