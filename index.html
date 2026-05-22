@@ -849,7 +849,7 @@
 
     .game-screen {
       height: 100dvh;
-      grid-template-rows: 48px minmax(0, 1fr) 64px;
+      grid-template-rows: 48px minmax(0, 1fr) 82px;
       gap: 8px;
       align-content: center;
       justify-items: center;
@@ -895,6 +895,7 @@
       gap: 12px;
       order: 4;
       width: 100%;
+      padding-top: 24px;
     }
 
     .tool {
@@ -926,6 +927,21 @@
       outline-offset: 2px;
       transform: translateY(1px);
       filter: none;
+    }
+
+    .tool.active::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -26px;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 17px solid transparent;
+      border-right: 17px solid transparent;
+      border-top: 22px solid #233044;
+      filter: drop-shadow(0 3px 0 rgba(255,255,255,.82)) drop-shadow(0 6px 8px rgba(23,32,45,.18));
+      pointer-events: none;
     }
 
     #backToStages {
@@ -1566,7 +1582,7 @@
       .game-screen {
         height: 100dvh;
         gap: 8px;
-        grid-template-rows: 48px minmax(0, 1fr) 64px;
+        grid-template-rows: 48px minmax(0, 1fr) 82px;
       }
       .status {
         min-height: 36px;
@@ -1587,7 +1603,7 @@
         position: relative;
         bottom: 0;
         z-index: 8;
-        padding-top: 0;
+        padding-top: 24px;
         background: transparent;
       }
       button { min-height: 36px; }
@@ -2849,7 +2865,7 @@
       const width = viewport.width || window.innerWidth;
       const height = viewport.height || window.innerHeight;
       const topSpace = 48;
-      const bottomSpace = 64;
+      const bottomSpace = 82;
       const verticalGaps = 24;
       const usableWidth = Math.max(240, width - 20);
       const usableHeight = Math.max(240, height - topSpace - bottomSpace - verticalGaps);
@@ -3186,12 +3202,13 @@
       stageGrid.innerHTML = "";
       sizes.forEach((_, index) => {
         const stage = makeStagePreview(index);
+        const regionCount = getStage(index).regionCount;
         const button = document.createElement("button");
         button.className = `stage-card ${completedStages.has(index) ? "completed" : ""}`;
         if (index === sizes.length - 1) button.classList.add("ex-stage");
         button.type = "button";
         button.innerHTML = `<strong>${stageNumberLabel(index)}</strong><span class="check">✓</span>`;
-        button.title = `${stage.displayName} / ${stage.size}×${stage.size}`;
+        button.title = `サイズ ${stage.size}×${stage.size} / 色エリア ${regionCount}`;
         button.addEventListener("click", () => startStage(index));
         stageGrid.append(button);
       });
