@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="Tetesum is an 18+ browser puzzle game with number-sum area puzzles and unlockable AI-generated adult-themed artwork." />
+  <meta name="6a97888e-site-verification" content="bf18405ea3ebb48509b84dc1304509be" />
   <title>緊縛エリアナンプレ</title>
   <style>
     :root {
@@ -275,6 +276,20 @@
       text-decoration: underline;
       box-shadow: none;
       font-size: .86rem;
+    }
+
+    .review-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      width: 100%;
+    }
+
+    .review-links a {
+      color: #344054;
+      font-weight: 850;
+      text-decoration: underline;
     }
 
     .ad-slot {
@@ -1346,6 +1361,21 @@
       font-weight: 750;
     }
 
+    .age-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin: 0 0 16px;
+      font-size: .86rem;
+      font-weight: 850;
+    }
+
+    .age-links a {
+      color: #344054;
+      text-decoration: underline;
+    }
+
     .age-box .button-sub {
       display: block;
       margin-top: 2px;
@@ -1765,10 +1795,15 @@
       <div class="title-notices">
         <span>18+ / AI-generated artwork</span>
         <button id="policyButton" class="notice-link" type="button">案内 / Info</button>
+        <nav class="review-links" aria-label="審査用リンク">
+          <a href="about.html">Game Info</a>
+          <a href="terms.html">Terms</a>
+          <a href="privacy.html">Privacy</a>
+        </nav>
       </div>
       <div class="ad-slot title-ad" aria-label="広告">
         <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
-        <ins class="eas6a97888e2" data-zoneid="5931226"></ins>
+        <ins class="eas6a97888e2" data-zoneid="5931970"></ins>
         <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
       </div>
     </section>
@@ -1799,7 +1834,7 @@
     </header>
     <section id="stageGrid" class="stage-grid" aria-label="ステージ一覧"></section>
     <div class="ad-slot stage-ad" aria-label="広告">
-      <ins class="eas6a97888e2" data-zoneid="5931226"></ins>
+      <ins class="eas6a97888e2" data-zoneid="5931970"></ins>
       <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
     </div>
   </main>
@@ -1876,6 +1911,11 @@
     <div class="modal-box age-box">
       <h2 id="ageGateTitle">18歳以上ですか？</h2>
       <p class="age-sub">Are you 18 or older?</p>
+      <nav class="age-links" aria-label="サイト情報">
+        <a href="about.html">Game Info</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </nav>
       <div class="modal-actions">
         <button id="leaveAgeGateButton" class="danger" type="button">いいえ<span class="button-sub">No</span></button>
         <button id="confirmAgeButton" class="primary" type="button">はい<span class="button-sub">Yes, I am 18+</span></button>
@@ -2038,7 +2078,7 @@
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
-    const hintAdZoneId = "5931940";
+    const hintAdZoneId = "5931976";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = ambientExtraImages.concat(stageImagePaths.slice(-7));
