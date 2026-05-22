@@ -1828,11 +1828,7 @@
           <a href="privacy.html">Privacy</a>
         </nav>
       </div>
-      <div class="ad-slot title-ad" aria-label="広告">
-        <script async type="application/javascript" src="https://a.magsrv.com/ad-provider.js"></script>
-        <ins class="eas6a97888e2" data-zoneid="5931970"></ins>
-        <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-      </div>
+      <div id="titleAdSlot" class="ad-slot title-ad" aria-label="広告"></div>
     </section>
   </main>
 
@@ -1860,10 +1856,7 @@
       <button id="stageBackButton" type="button">タイトルへ</button>
     </header>
     <section id="stageGrid" class="stage-grid" aria-label="ステージ一覧"></section>
-    <div class="ad-slot stage-ad" aria-label="広告">
-      <ins class="eas6a97888e2" data-zoneid="5931970"></ins>
-      <script>(AdProvider = window.AdProvider || []).push({"serve": {}});</script>
-    </div>
+    <div id="stageAdSlot" class="ad-slot stage-ad" aria-label="広告"></div>
   </main>
 
   <main id="gameScreen" class="screen game-screen">
@@ -2083,6 +2076,8 @@
     const stageScreen = document.getElementById("stageScreen");
     const gameScreen = document.getElementById("gameScreen");
     const stageGrid = document.getElementById("stageGrid");
+    const titleAdSlot = document.getElementById("titleAdSlot");
+    const stageAdSlot = document.getElementById("stageAdSlot");
     const boardEl = document.getElementById("board");
     const stageLabel = document.getElementById("stageLabel");
     const sizeLabel = document.getElementById("sizeLabel");
@@ -2113,6 +2108,9 @@
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
+    const standardAdProviderSrc = "https://a.magsrv.com/ad-provider.js";
+    const standardAdClassName = "eas6a97888e2";
+    const standardAdZoneId = "5931970";
     const hintAdProviderSrc = "https://a.pemsrv.com/ad-provider.js";
     const hintAdClassName = "eas6a97888e33";
     const hintAdZoneId = "5932074";
@@ -2815,6 +2813,8 @@
       tutorialScreen.classList.toggle("active", name === "tutorial");
       stageScreen.classList.toggle("active", name === "stage");
       gameScreen.classList.toggle("active", name === "game");
+      if (name === "title") renderStandardAd(titleAdSlot);
+      if (name === "stage") renderStandardAd(stageAdSlot);
     }
 
     function getTutorialRegionCells(id) {
@@ -3692,6 +3692,27 @@
       showHintCell();
     }
 
+    function renderStandardAd(slot) {
+      if (!slot || slot.dataset.adRendered === "true") return;
+      slot.dataset.adRendered = "true";
+      ensureStandardAdProvider();
+      slot.innerHTML = `<ins class="${standardAdClassName}" data-zoneid="${standardAdZoneId}"></ins>`;
+      requestAnimationFrame(() => {
+        try {
+          (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+        } catch {}
+      });
+    }
+
+    function ensureStandardAdProvider() {
+      if (document.querySelector(`script[src="${standardAdProviderSrc}"]`)) return;
+      const script = document.createElement("script");
+      script.async = true;
+      script.type = "application/javascript";
+      script.src = standardAdProviderSrc;
+      document.body.append(script);
+    }
+
     function ensureHintAdProvider() {
       if (document.querySelector(`script[src="${hintAdProviderSrc}"]`)) return;
       const script = document.createElement("script");
@@ -3804,6 +3825,7 @@
 
     updateAmbientImage();
     renderStageCards();
+    renderStandardAd(titleAdSlot);
     showAgeGateIfNeeded();
   </script>
 </body>
