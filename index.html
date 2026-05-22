@@ -784,6 +784,22 @@
     .stage-card:nth-child(6n + 5) { --stage-a: #b9a2ff; --stage-b: #7d64e8; }
     .stage-card:nth-child(6n) { --stage-a: #ffad71; --stage-b: #f06f37; }
 
+    .stage-card.ex-stage {
+      border-color: rgba(255,255,255,.88);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.68), rgba(255,255,255,0) 48%),
+        linear-gradient(110deg, #ff4d72, #ffcf4a 22%, #4be276 42%, #39c8ff 62%, #8d6cff 80%, #ff5ed6);
+      box-shadow:
+        inset 0 2px 0 rgba(255,255,255,.78),
+        inset 0 -3px 0 rgba(34,42,70,.18),
+        0 6px 16px rgba(85,105,180,.22);
+    }
+
+    .stage-card.ex-stage strong {
+      color: #fff;
+      text-shadow: 0 2px 0 rgba(23,32,45,.34), 0 0 10px rgba(255,255,255,.46);
+    }
+
     .stage-card:hover {
       border-color: #62bfe4;
       box-shadow:
@@ -1799,6 +1815,22 @@
     const legacyStageOffset = 10;
     const legacyStageCount = 21;
     const sizes = [4,4,4,4,4,5,5,5,5,5,6,6,7,7,8,8,9,9,10,10,6,7,8,9,10,6,7,8,9,10,20];
+    const stageImagePaths = Array.from({ length: sizes.length - 1 }, (_, index) => `assets/tetesum/${index + 1}.jpg`)
+      .concat("assets/tetesum/EX1.jpg");
+    const ambientExtraImages = [
+      "assets/tetesum/31.jpg",
+      "assets/tetesum/32.jpg",
+      "assets/tetesum/33.jpg",
+      "assets/tetesum/34.jpg",
+      "assets/tetesum/35.jpg",
+      "assets/tetesum/36.jpg",
+      "assets/tetesum/37.jpg",
+      "assets/tetesum/38.jpg",
+      "assets/tetesum/39.jpg",
+      "assets/tetesum/40.jpg",
+      "assets/tetesum/41.jpg",
+      "assets/tetesum/a2fd3deb-7d22-4447-8b00-0419a186403d.jpg"
+    ];
 
     const stageCache = Array(sizes.length).fill(null);
 
@@ -1815,6 +1847,7 @@
       colTargets: [],
       regionTargets: [],
       revealedRegions: [],
+      regionColors: [],
       tool: "confirm",
       lives: 3,
       won: false
@@ -1855,7 +1888,7 @@
     const ageGateKey = "tetesumAgeConfirmed";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
-    const ambientBaseImages = [22, 23, 24, 25, 26, 27, 28].map(n => `assets/tetesum/${n}.jpg`);
+    const ambientBaseImages = ambientExtraImages.concat(stageImagePaths.slice(-7));
     let forceClearTimer = null;
     const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
     const praiseBalloonSrcs = praiseWords.map((word, index) =>
@@ -1932,7 +1965,7 @@
     let tutorialDemoTimer = null;
 
     function getStageImageIndex(index) {
-      return index < legacyStageOffset ? index + legacyStageCount : index - legacyStageOffset;
+      return index;
     }
 
     function makeStage(size, index) {
@@ -1942,12 +1975,14 @@
       const regions = makeStageRegions(size, index);
       const values = makeValues(size, index + 3);
       const solution = makeSolution(size, regions, index + 5);
+      const regionColors = assignRegionColors(regions, Math.max(...regions.flat()) + 1, size, index);
       return {
         name: `${scene[0]} ${size}×${size}`,
         displayName: index === sizes.length - 1 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
         size,
         regions,
         regionCount: Math.max(...regions.flat()) + 1,
+        regionColors,
         values,
         solution,
         scene: scene.slice(1, 6),
@@ -1976,7 +2011,7 @@
     }
 
     function stageNumberLabel(index) {
-      return index === sizes.length - 1 ? "EX" : String(index + 1);
+      return index === sizes.length - 1 ? "EX1" : String(index + 1);
     }
 
     function makeStageRegions(size, index) {
@@ -2178,6 +2213,61 @@
       return regions;
     }
 
+    function makeRegionAdjacency(regions, regionCount, size) {
+      const adjacency = Array.from({ length: regionCount }, () => new Set());
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          for (const [nr, nc] of neighbors(r, c, size)) {
+            const a = regions[r][c];
+            const b = regions[nr][nc];
+            if (a === b) continue;
+            adjacency[a].add(b);
+            adjacency[b].add(a);
+          }
+        }
+      }
+      return adjacency;
+    }
+
+    function colorDistance(a, b) {
+      const ar = parseInt(a.slice(1, 3), 16);
+      const ag = parseInt(a.slice(3, 5), 16);
+      const ab = parseInt(a.slice(5, 7), 16);
+      const br = parseInt(b.slice(1, 3), 16);
+      const bg = parseInt(b.slice(3, 5), 16);
+      const bb = parseInt(b.slice(5, 7), 16);
+      return Math.hypot(ar - br, ag - bg, ab - bb);
+    }
+
+    function assignRegionColors(regions, regionCount, size, seed) {
+      const adjacency = makeRegionAdjacency(regions, regionCount, size);
+      const order = Array.from({ length: regionCount }, (_, id) => id)
+        .sort((a, b) => adjacency[b].size - adjacency[a].size || a - b);
+      const shiftedPalette = palette.map((_, index) => palette[(index + seed * 3) % palette.length]);
+      const assigned = Array(regionCount).fill(null);
+
+      order.forEach(id => {
+        let bestColor = shiftedPalette[0];
+        let bestScore = -Infinity;
+        shiftedPalette.forEach((color, colorIndex) => {
+          const neighborColors = [...adjacency[id]].map(neighbor => assigned[neighbor]).filter(Boolean);
+          const neighborScore = neighborColors.length
+            ? Math.min(...neighborColors.map(neighborColor => colorDistance(color, neighborColor)))
+            : 180;
+          const repeatPenalty = assigned.includes(color) ? 18 : 0;
+          const tieBreak = ((colorIndex * 17 + id * 11 + seed) % shiftedPalette.length) / 100;
+          const score = neighborScore - repeatPenalty + tieBreak;
+          if (score > bestScore) {
+            bestScore = score;
+            bestColor = color;
+          }
+        });
+        assigned[id] = bestColor;
+      });
+
+      return assigned;
+    }
+
     function makeValues(size, seed) {
       return Array.from({ length: size }, (_, r) =>
         Array.from({ length: size }, (_, c) => ((r * 3 + c * 5 + seed * 2 + (r * c) % 7) % 9) + 1)
@@ -2249,37 +2339,9 @@
     }
 
     function makePuzzleImagePath(stage) {
-      const catImages = [
-        "assets/tetesum/1.jpg",
-        "assets/tetesum/2.jpg",
-        "assets/tetesum/3.jpg",
-        "assets/tetesum/4.jpg",
-        "assets/tetesum/5.jpg",
-        "assets/tetesum/6.jpg",
-        "assets/tetesum/7.jpg",
-        "assets/tetesum/8.jpg",
-        "assets/tetesum/9.jpg",
-        "assets/tetesum/10.jpg",
-        "assets/tetesum/11.jpg",
-        "assets/tetesum/12.jpg",
-        "assets/tetesum/13.jpg",
-        "assets/tetesum/14.jpg",
-        "assets/tetesum/15.jpg",
-        "assets/tetesum/16.jpg",
-        "assets/tetesum/17.jpg",
-        "assets/tetesum/18.jpg",
-        "assets/tetesum/19.jpg",
-        "assets/tetesum/20.jpg",
-        "assets/tetesum/21.jpg",
-        "assets/tetesum/22.jpg",
-        "assets/tetesum/23.jpg",
-        "assets/tetesum/24.jpg",
-        "assets/tetesum/25.jpg",
-        "assets/tetesum/26.jpg",
-        "assets/tetesum/27.jpg",
-        "assets/tetesum/28.jpg"
-      ];
-      return catImages[(stage.imageIndex || 0) % catImages.length];
+      const index = Number.isInteger(stage.imageIndex) ? stage.imageIndex : 0;
+      if (index < stageImagePaths.length) return stageImagePaths[index];
+      return stageImagePaths[stageImagePaths.length - 1];
     }
 
     function pickAmbientImage() {
@@ -2766,6 +2828,7 @@
       state.selected = emptyGrid(stage.size, false);
       state.decided = emptyGrid(stage.size, false);
       state.regions = cloneGrid(stage.regions);
+      state.regionColors = stage.regionColors.slice();
       state.revealedRegions = Array(stage.regionCount).fill(false);
       state.tool = "confirm";
       state.lives = 3;
@@ -2822,7 +2885,7 @@
           cell.className = `cell ${stateClass} ${state.revealedRegions[regionId] ? "revealed" : ""}`;
           cell.style.gridColumn = String(c + 2);
           cell.style.gridRow = String(r + 1);
-          const baseColor = palette[regionId % palette.length];
+          const baseColor = state.regionColors[regionId] || palette[regionId % palette.length];
           cell.style.background = state.revealedRegions[regionId] ? fadedColor(baseColor) : softColor(baseColor);
           cell.textContent = state.revealedRegions[regionId] ? (state.selected[r][c] ? state.values[r][c] : "") : (state.decided[r][c] && !state.selected[r][c] ? "×" : state.values[r][c]);
           cell.addEventListener("pointerup", event => {
@@ -2989,7 +3052,7 @@
     }
 
     function updateStatus() {
-      stageLabel.textContent = state.stageIndex === sizes.length - 1 ? "EX" : `${state.stageIndex + 1} / ${sizes.length - 1}`;
+      stageLabel.textContent = state.stageIndex === sizes.length - 1 ? "EX1" : `${state.stageIndex + 1} / ${sizes.length - 1}`;
       sizeLabel.textContent = `${state.size}×${state.size}`;
       lifeLabel.textContent = "♥".repeat(Math.max(0, state.lives)) + "♡".repeat(Math.max(0, 3 - state.lives));
       toolLabel.textContent = state.tool === "confirm" ? "確定" : "消す";
@@ -3090,7 +3153,7 @@
         item.className = "gallery-item";
         const img = document.createElement("img");
         img.src = makePuzzleImagePath(stage);
-        img.alt = `ステージ${index + 1}の解放画像`;
+        img.alt = `${stageNumberLabel(index)}の解放画像`;
         img.loading = "lazy";
         const label = document.createElement("span");
         label.textContent = stageNumberLabel(index);
@@ -3125,6 +3188,7 @@
         const stage = makeStagePreview(index);
         const button = document.createElement("button");
         button.className = `stage-card ${completedStages.has(index) ? "completed" : ""}`;
+        if (index === sizes.length - 1) button.classList.add("ex-stage");
         button.type = "button";
         button.innerHTML = `<strong>${stageNumberLabel(index)}</strong><span class="check">✓</span>`;
         button.title = `${stage.displayName} / ${stage.size}×${stage.size}`;
