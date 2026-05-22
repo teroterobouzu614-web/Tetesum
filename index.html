@@ -877,15 +877,73 @@
       display: none;
     }
 
-    .hearts {
-      color: #ff2c55;
-      letter-spacing: 5px;
-      font-size: 1.35rem;
-      line-height: 1;
+    .hp-bar {
+      --hp-fill: 100%;
+      width: min(34vw, 132px);
+      height: 20px;
+      display: block;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid #263247;
+      border-radius: 999px;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 calc(33.333% - 2px), rgba(38,50,71,.85) calc(33.333% - 2px) calc(33.333% + 2px)),
+        linear-gradient(180deg, #f7f9fc, #dfe7f2);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.72), 0 6px 14px rgba(23,32,45,.12);
       cursor: pointer;
       user-select: none;
       -webkit-user-select: none;
       -webkit-tap-highlight-color: transparent;
+    }
+
+    .hp-bar::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--hp-fill);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.52), rgba(255,255,255,0) 46%),
+        linear-gradient(90deg, #20c76f, #9be85d);
+      transition: width .22s ease;
+    }
+
+    .hp-bar.danger::before {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.52), rgba(255,255,255,0) 46%),
+        linear-gradient(90deg, #d71935, #ff6b7d);
+    }
+
+    .hp-bar::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(90deg, transparent 0 calc(33.333% - 2px), rgba(38,50,71,.95) calc(33.333% - 2px) calc(33.333% + 2px));
+      pointer-events: none;
+    }
+
+    .hint-button {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      min-height: 38px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #fff8a8, #ffd747 54%, #f0a81d);
+      color: #1f2937;
+      font-size: 1.45rem;
+      font-weight: 950;
+      line-height: 1;
+      text-shadow: 0 1px 0 rgba(255,255,255,.52);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.72), inset 0 -4px 0 rgba(128,76,4,.18), 0 7px 15px rgba(23,32,45,.14);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hint-button:active {
+      transform: translateY(2px);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.52), inset 0 -2px 0 rgba(128,76,4,.18), 0 4px 8px rgba(23,32,45,.12);
     }
 
     .tools {
@@ -1131,6 +1189,27 @@
       box-shadow: inset 0 0 0 999px rgba(207,35,61,.24);
     }
 
+    .cell.hinted {
+      z-index: 4;
+      background: #ff5d6e !important;
+      color: #fff;
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,.62),
+        0 0 0 4px rgba(255,49,93,.22),
+        0 10px 26px rgba(207,35,61,.34);
+    }
+
+    .cell.hint-pop {
+      animation: hintCellPop 1.15s cubic-bezier(.18, .86, .2, 1.08) both;
+    }
+
+    @keyframes hintCellPop {
+      0% { transform: scale(1); }
+      22% { transform: scale(1.62); }
+      62% { transform: scale(1.34); }
+      100% { transform: scale(1); }
+    }
+
     @keyframes miss {
       0%, 100% { transform: translateX(0); }
       30% { transform: translateX(-5px); }
@@ -1285,6 +1364,20 @@
       background: linear-gradient(180deg, #ff8d9b, #f34b60 58%, #c7263b);
       color: #fff;
       box-shadow: inset 0 3px 0 rgba(255,255,255,.52), inset 0 -4px 0 rgba(88,16,28,.16), 0 10px 20px rgba(23,32,45,.12);
+    }
+
+    .modal-actions button:disabled {
+      opacity: .55;
+      cursor: wait;
+      transform: none;
+      filter: grayscale(.18);
+    }
+
+    .hint-countdown {
+      margin: -6px 0 14px;
+      color: #d71935;
+      font-size: 1.25rem;
+      font-weight: 950;
     }
 
     .clear-box {
@@ -1592,6 +1685,17 @@
         top: 0;
         z-index: 6;
       }
+      .hint-button {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        min-height: 36px;
+        font-size: 1.2rem;
+      }
+      .hp-bar {
+        width: min(36vw, 118px);
+        height: 18px;
+      }
       .status-meta,
       .message { display: none; }
       #backToStages {
@@ -1706,7 +1810,8 @@
     <header class="status">
       <div class="status-meta"><span>ステージ</span> <strong id="stageLabel">1 / 21</strong></div>
       <div class="status-meta"><span>サイズ</span> <strong id="sizeLabel">6×6</strong></div>
-      <div><span>ライフ</span> <strong id="lifeLabel" class="hearts">♥♥♥</strong></div>
+      <div><span>ライフ</span> <strong id="lifeLabel" class="hp-bar" aria-label="HP 3"></strong></div>
+      <button id="hintButton" class="hint-button" type="button" aria-label="ヒント">?</button>
       <div class="status-meta"><span>操作</span> <strong id="toolLabel">確定</strong></div>
       <button id="backToStages" type="button">メニュー</button>
     </header>
@@ -1740,6 +1845,29 @@
       </label>
       <div class="modal-actions">
         <button id="closeSettingsButton" class="primary" type="button">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hintConfirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="hintConfirmTitle">
+    <div class="modal-box">
+      <h2 id="hintConfirmTitle">ヒントを見ますか？</h2>
+      <p>広告が流れます。</p>
+      <div class="modal-actions">
+        <button id="watchHintAdButton" class="primary" type="button">はい</button>
+        <button id="cancelHintButton" type="button">いいえ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="hintAdModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="hintAdTitle">
+    <div class="modal-box">
+      <h2 id="hintAdTitle">広告</h2>
+      <p>30秒後にヒントを見られます。</p>
+      <div id="hintCountdown" class="hint-countdown">30</div>
+      <div id="hintAdSlot" class="ad-slot" aria-label="ヒント広告"></div>
+      <div class="modal-actions">
+        <button id="closeHintAdButton" class="primary" type="button" disabled>閉じる</button>
       </div>
     </div>
   </div>
@@ -1864,6 +1992,8 @@
       regionTargets: [],
       revealedRegions: [],
       regionColors: [],
+      hintCell: null,
+      hintAnimating: false,
       tool: "confirm",
       lives: 3,
       won: false
@@ -1886,6 +2016,12 @@
     const messageEl = document.getElementById("message");
     const confirmTool = document.getElementById("confirmTool");
     const eraseTool = document.getElementById("eraseTool");
+    const hintButton = document.getElementById("hintButton");
+    const hintConfirmModal = document.getElementById("hintConfirmModal");
+    const hintAdModal = document.getElementById("hintAdModal");
+    const hintAdSlot = document.getElementById("hintAdSlot");
+    const hintCountdown = document.getElementById("hintCountdown");
+    const closeHintAdButton = document.getElementById("closeHintAdButton");
     const gameOverModal = document.getElementById("gameOverModal");
     const exitModal = document.getElementById("exitModal");
     const settingsModal = document.getElementById("settingsModal");
@@ -1906,6 +2042,9 @@
     const completedStages = loadCompletedStages();
     const ambientBaseImages = ambientExtraImages.concat(stageImagePaths.slice(-7));
     let forceClearTimer = null;
+    let hintAdTimer = null;
+    let hintAnimationTimer = null;
+    let hintAdStageIndex = null;
     const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
     const praiseBalloonSrcs = praiseWords.map((word, index) =>
       makeBalloonImage(word, ["#22a9cc", "#ff5272", "#7c3aed", "#f59e0b", "#16a34a", "#e11d48"][index], "#fff4a8", "#55cde9")
@@ -2835,6 +2974,7 @@
     }
 
     function startStage(index) {
+      cancelHintFlow();
       const stage = getStage(index);
       state.stageIndex = index;
       state.size = stage.size;
@@ -2846,6 +2986,8 @@
       state.regions = cloneGrid(stage.regions);
       state.regionColors = stage.regionColors.slice();
       state.revealedRegions = Array(stage.regionCount).fill(false);
+      state.hintCell = null;
+      state.hintAnimating = false;
       state.tool = "confirm";
       state.lives = 3;
       state.won = false;
@@ -2897,8 +3039,9 @@
           const regionId = state.regions[r][c];
           const cell = document.createElement("button");
           const stateClass = state.decided[r][c] ? (state.selected[r][c] ? "confirmed" : "erased") : "";
+          const isHinted = state.hintCell && state.hintCell[0] === r && state.hintCell[1] === c && !state.decided[r][c] && !state.revealedRegions[regionId];
           cell.type = "button";
-          cell.className = `cell ${stateClass} ${state.revealedRegions[regionId] ? "revealed" : ""}`;
+          cell.className = `cell ${stateClass} ${state.revealedRegions[regionId] ? "revealed" : ""} ${isHinted ? "hinted" : ""} ${isHinted && state.hintAnimating ? "hint-pop" : ""}`;
           cell.style.gridColumn = String(c + 2);
           cell.style.gridRow = String(r + 1);
           const baseColor = state.regionColors[regionId] || palette[regionId % palette.length];
@@ -2997,6 +3140,7 @@
     }
 
     function winStage() {
+      cancelHintFlow();
       state.won = true;
       markStageCompleted(state.stageIndex);
       state.revealedRegions = Array(state.regionCount).fill(true);
@@ -3047,6 +3191,7 @@
     }
 
     function gameOver() {
+      cancelHintFlow();
       shakeScreen();
       gameOverModal.classList.add("active");
     }
@@ -3070,7 +3215,10 @@
     function updateStatus() {
       stageLabel.textContent = state.stageIndex === sizes.length - 1 ? "EX1" : `${state.stageIndex + 1} / ${sizes.length - 1}`;
       sizeLabel.textContent = `${state.size}×${state.size}`;
-      lifeLabel.textContent = "♥".repeat(Math.max(0, state.lives)) + "♡".repeat(Math.max(0, 3 - state.lives));
+      const hpPercent = `${Math.max(0, Math.min(3, state.lives)) / 3 * 100}%`;
+      lifeLabel.style.setProperty("--hp-fill", hpPercent);
+      lifeLabel.classList.toggle("danger", state.lives === 1);
+      lifeLabel.setAttribute("aria-label", `HP ${Math.max(0, state.lives)}`);
       toolLabel.textContent = state.tool === "confirm" ? "確定" : "消す";
     }
 
@@ -3213,6 +3361,114 @@
         stageGrid.append(button);
       });
     }
+
+    function showHintConfirm() {
+      if (!canUseHint()) return;
+      hintConfirmModal.classList.add("active");
+    }
+
+    function canUseHint(expectedStageIndex = state.stageIndex) {
+      if (!gameScreen.classList.contains("active")) return false;
+      if (state.won || state.lives <= 0) return false;
+      if (expectedStageIndex !== state.stageIndex) return false;
+      return Boolean(pickHintCell());
+    }
+
+    function cancelHintFlow() {
+      clearInterval(hintAdTimer);
+      clearTimeout(hintAnimationTimer);
+      hintAdTimer = null;
+      hintAnimationTimer = null;
+      hintAdStageIndex = null;
+      state.hintCell = null;
+      state.hintAnimating = false;
+      hintConfirmModal.classList.remove("active");
+      hintAdModal.classList.remove("active");
+      closeHintAdButton.disabled = false;
+      closeHintAdButton.textContent = "閉じる";
+      hintCountdown.textContent = "30";
+    }
+
+    function pickHintCell() {
+      const candidates = [];
+      for (let r = 0; r < state.size; r++) {
+        for (let c = 0; c < state.size; c++) {
+          const regionId = state.regions[r][c];
+          if (state.decided[r][c] || state.revealedRegions[regionId]) continue;
+          candidates.push([r, c]);
+        }
+      }
+      if (!candidates.length) return null;
+      const confirmCandidates = candidates.filter(([r, c]) => state.solution[r][c]);
+      return (confirmCandidates[0] || candidates[0]).slice();
+    }
+
+    function showHintCell() {
+      if (!canUseHint(hintAdStageIndex ?? state.stageIndex)) {
+        cancelHintFlow();
+        return;
+      }
+      const hint = pickHintCell();
+      if (!hint) {
+        cancelHintFlow();
+        return;
+      }
+      state.hintCell = hint;
+      state.hintAnimating = true;
+      render();
+      setMessage("赤く光ったマスがヒントです。", "warn");
+      clearTimeout(hintAnimationTimer);
+      hintAnimationTimer = setTimeout(() => {
+        hintAnimationTimer = null;
+        if (state.won || state.lives <= 0 || !state.hintCell) return;
+        state.hintAnimating = false;
+        render();
+      }, 1200);
+    }
+
+    function startHintAd() {
+      if (!canUseHint()) {
+        hintConfirmModal.classList.remove("active");
+        return;
+      }
+      hintAdStageIndex = state.stageIndex;
+      hintConfirmModal.classList.remove("active");
+      hintAdModal.classList.add("active");
+      closeHintAdButton.disabled = true;
+      closeHintAdButton.textContent = "閉じる";
+      let remaining = 30;
+      hintCountdown.textContent = String(remaining);
+      hintAdSlot.innerHTML = '<ins class="eas6a97888e2" data-zoneid="5931226"></ins>';
+      try {
+        (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+      } catch {}
+      clearInterval(hintAdTimer);
+      hintAdTimer = setInterval(() => {
+        remaining -= 1;
+        hintCountdown.textContent = String(Math.max(0, remaining));
+        if (remaining <= 0) {
+          clearInterval(hintAdTimer);
+          hintAdTimer = null;
+          closeHintAdButton.disabled = false;
+          closeHintAdButton.textContent = "ヒントを見る";
+          hintCountdown.textContent = "ヒントを表示します";
+          clearTimeout(hintAnimationTimer);
+          hintAnimationTimer = setTimeout(() => {
+            hintAnimationTimer = null;
+            if (!hintAdModal.classList.contains("active")) return;
+            hintAdModal.classList.remove("active");
+            showHintCell();
+          }, 650);
+        }
+      }, 1000);
+    }
+
+    function closeHintAd() {
+      if (closeHintAdButton.disabled) return;
+      hintAdModal.classList.remove("active");
+      showHintCell();
+    }
+
     document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
     document.getElementById("howToButton").addEventListener("click", startTutorial);
     document.getElementById("tutorialCloseButton").addEventListener("click", event => {
@@ -3248,6 +3504,12 @@
     document.getElementById("closeGalleryButton").addEventListener("click", () => {
       galleryModal.classList.remove("active");
     });
+    hintButton.addEventListener("click", showHintConfirm);
+    document.getElementById("watchHintAdButton").addEventListener("click", startHintAd);
+    document.getElementById("cancelHintButton").addEventListener("click", () => {
+      hintConfirmModal.classList.remove("active");
+    });
+    closeHintAdButton.addEventListener("click", closeHintAd);
     document.getElementById("backToStages").addEventListener("click", () => showScreen("stage"));
     document.getElementById("gameExitButton").addEventListener("click", () => {
       if (!state.won) exitModal.classList.add("active");
@@ -3267,6 +3529,7 @@
       exitModal.classList.remove("active");
     });
     document.getElementById("exitToTitleButton").addEventListener("click", () => {
+      cancelHintFlow();
       exitModal.classList.remove("active");
       showScreen("stage");
     });
