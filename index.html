@@ -676,11 +676,15 @@
     }
 
     .stage-screen {
+      height: 100dvh;
       align-content: start;
       gap: 14px;
-      overflow: auto;
+      overflow-x: hidden;
+      overflow-y: auto;
       padding-inline: 10px;
       position: relative;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
       background:
         linear-gradient(180deg, rgba(232, 249, 255, .96) 0%, rgba(249,255,244,.98) 48%, rgba(218, 244, 203, .98) 100%),
         radial-gradient(circle at 12% 16%, rgba(255, 223, 112, .22), transparent 24%),
