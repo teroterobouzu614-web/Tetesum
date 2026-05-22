@@ -1906,9 +1906,6 @@
       <p>広告のあとにヒントを見られます。</p>
       <div id="hintCountdown" class="hint-countdown">5</div>
       <div id="hintAdSlot" class="ad-slot" aria-label="ヒント広告"></div>
-      <div class="modal-actions">
-        <button id="closeHintAdButton" class="primary" type="button" disabled>閉じる</button>
-      </div>
     </div>
   </div>
 
@@ -2071,7 +2068,6 @@
     const hintAdModal = document.getElementById("hintAdModal");
     const hintAdSlot = document.getElementById("hintAdSlot");
     const hintCountdown = document.getElementById("hintCountdown");
-    const closeHintAdButton = document.getElementById("closeHintAdButton");
     const gameOverModal = document.getElementById("gameOverModal");
     const exitModal = document.getElementById("exitModal");
     const settingsModal = document.getElementById("settingsModal");
@@ -2089,11 +2085,13 @@
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
     const standardAdProviderSrc = "https://a.magsrv.com/ad-provider.js";
-    const standardAdClassName = "eas6a97888e6";
-    const standardAdZoneId = "5931976";
+    const standardAdClassName = "eas6a97888e2";
+    const standardAdZoneId = "5932240";
     const hintAdProviderSrc = "https://a.pemsrv.com/ad-provider.js";
     const hintAdClassName = "eas6a97888e33";
     const hintAdZoneId = "5932074";
+    const desktopHintAdClassName = "eas6a97888e35";
+    const desktopHintAdZoneId = "5932242";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = ambientExtraImages;
@@ -4074,8 +4072,6 @@
       state.hintAnimating = false;
       hintConfirmModal.classList.remove("active");
       hintAdModal.classList.remove("active");
-      closeHintAdButton.disabled = false;
-      closeHintAdButton.textContent = "閉じる";
       hintCountdown.textContent = "5";
     }
 
@@ -4124,11 +4120,10 @@
       hintAdStageIndex = state.stageIndex;
       hintConfirmModal.classList.remove("active");
       hintAdModal.classList.add("active");
-      closeHintAdButton.disabled = true;
-      closeHintAdButton.textContent = "閉じる";
       let remaining = 5;
       hintCountdown.textContent = String(remaining);
-      hintAdSlot.innerHTML = `<ins class="${hintAdClassName}" data-zoneid="${hintAdZoneId}"></ins>`;
+      const hintZone = getHintAdZone();
+      hintAdSlot.innerHTML = `<ins class="${hintZone.className}" data-zoneid="${hintZone.zoneId}"></ins>`;
       requestAdServe(hintAdProviderSrc);
       clearInterval(hintAdTimer);
       hintAdTimer = setInterval(() => {
@@ -4137,8 +4132,6 @@
         if (remaining <= 0) {
           clearInterval(hintAdTimer);
           hintAdTimer = null;
-          closeHintAdButton.disabled = false;
-          closeHintAdButton.textContent = "ヒントを見る";
           hintCountdown.textContent = "ヒントを表示します";
           clearTimeout(hintAnimationTimer);
           hintAnimationTimer = setTimeout(() => {
@@ -4151,10 +4144,11 @@
       }, 1000);
     }
 
-    function closeHintAd() {
-      if (closeHintAdButton.disabled) return;
-      hintAdModal.classList.remove("active");
-      showHintCell();
+    function getHintAdZone() {
+      const isMobile = matchMedia("(hover: none) and (pointer: coarse)").matches || Math.min(window.innerWidth, window.innerHeight) < 760;
+      return isMobile
+        ? { className: hintAdClassName, zoneId: hintAdZoneId }
+        : { className: desktopHintAdClassName, zoneId: desktopHintAdZoneId };
     }
 
     function renderStandardAd(slot) {
@@ -4228,7 +4222,6 @@
     document.getElementById("cancelHintButton").addEventListener("click", () => {
       hintConfirmModal.classList.remove("active");
     });
-    closeHintAdButton.addEventListener("click", closeHintAd);
     document.getElementById("backToStages").addEventListener("click", () => showScreen("stage"));
     document.getElementById("gameExitButton").addEventListener("click", () => {
       if (!state.won) exitModal.classList.add("active");
