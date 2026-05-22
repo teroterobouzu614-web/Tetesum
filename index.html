@@ -799,6 +799,18 @@
     .stage-card:nth-child(6n + 5) { --stage-a: #b9a2ff; --stage-b: #7d64e8; }
     .stage-card:nth-child(6n) { --stage-a: #ffad71; --stage-b: #f06f37; }
 
+    .stage-card.stage-size-4 { background: linear-gradient(180deg, #fff, #ffe5ec 64%, #ffc7d4); }
+    .stage-card.stage-size-5 { background: linear-gradient(180deg, #fff, #e0f7ff 64%, #b8edff); }
+    .stage-card.stage-size-6 { background: linear-gradient(180deg, #fff, #fff1c9 64%, #ffdc72); }
+    .stage-card.stage-size-7 { background: linear-gradient(180deg, #fff, #e3f8df 64%, #b7edaa); }
+    .stage-card.stage-size-8 { background: linear-gradient(180deg, #fff, #eee7ff 64%, #cfc0ff); }
+    .stage-card.stage-size-9 { background: linear-gradient(180deg, #fff, #ffe9d7 64%, #ffc49a); }
+    .stage-card.stage-size-10 { background: linear-gradient(180deg, #fff, #dff5f0 64%, #aee4d8); }
+    .stage-card.stage-size-12 { background: linear-gradient(180deg, #fff, #e8eef8 64%, #c6d4ea); }
+    .stage-card.stage-size-14 { background: linear-gradient(180deg, #fff, #f8e8f3 64%, #edbbdc); }
+    .stage-card.stage-size-16 { background: linear-gradient(180deg, #fff, #e7f0ff 64%, #bdd3ff); }
+    .stage-card.stage-size-20 { background: linear-gradient(180deg, #fff, #f0eadf 64%, #d9c8aa); }
+
     .stage-card.ex-stage {
       border-color: rgba(255,255,255,.88);
       background:
@@ -860,6 +872,21 @@
 
     .stage-card.completed .check {
       display: grid;
+    }
+
+    .stage-card.locked {
+      cursor: not-allowed;
+      color: #8b95a5;
+      border-color: #cfd7e3;
+      background: linear-gradient(180deg, #f2f4f8, #d9dfe8);
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.72), inset 0 -3px 0 rgba(80,96,122,.08);
+      filter: grayscale(1);
+      opacity: .72;
+    }
+
+    .stage-card.locked strong {
+      color: #8b95a5;
+      text-shadow: 0 1px 0 rgba(255,255,255,.75);
     }
 
     .game-screen {
@@ -1988,6 +2015,7 @@
 
   <script>
     const palette = ["#ffdca8", "#f7a4c9", "#a8dcfa", "#fff4a8", "#d7c2ff", "#c8f0b6", "#ffc8a8", "#bfe8ff", "#f5b4da", "#fff0b8", "#bfe7d6", "#e4ceff", "#ffcfd0", "#cce5ff", "#f8d7a4", "#d8f7be", "#f4b8c8", "#b9d8ff", "#fbe4a8", "#d0f0ee"];
+    const areaPalette = ["#ffd166", "#55cde9", "#f471b5", "#83d56b", "#ff8a4c", "#7c83ff", "#b17cff", "#b7dc4b"];
     const sceneSets = [
       ["朝の庭", "#a7d8ff", "#78b46d", "#7d513e", "#f3b2a4", "#f7d35f", "watering"],
       ["港の夕暮れ", "#f6a66f", "#3d7890", "#30435b", "#d86e72", "#f2ca78", "wind"],
@@ -1998,9 +2026,29 @@
     ];
     const legacyStageOffset = 10;
     const legacyStageCount = 21;
-    const sizes = [4,4,4,4,4,5,5,5,5,5,6,6,7,7,8,8,9,9,10,10,6,7,8,9,10,6,7,8,9,10,20];
-    const stageImagePaths = Array.from({ length: sizes.length - 1 }, (_, index) => `assets/tetesum/${index + 1}.jpg`)
-      .concat("assets/tetesum/EX1.jpg");
+    const normalStageCount = 100;
+    const exStageCount = 5;
+    const stagePlan = [
+      ...[3,3,3,3,3,3,2,2,2,2].map(regionCount => ({ size: 4, regionCount })),
+      ...[5,5,5,5,4,4,4,4,3,3,3,3].map(regionCount => ({ size: 5, regionCount })),
+      ...[7,7,7,6,6,6,5,5,5,4,4,4,3,3].map(regionCount => ({ size: 6, regionCount })),
+      ...[9,9,8,8,8,7,7,6,6,5,5,4,4,4].map(regionCount => ({ size: 7, regionCount })),
+      ...[12,12,11,11,10,10,9,8,8,7,6,6,5,5,4].map(regionCount => ({ size: 8, regionCount })),
+      ...[16,15,15,14,13,12,11,10,9,8,7,7,6,5,5].map(regionCount => ({ size: 9, regionCount })),
+      ...[20,18,17,16,15,14,13,12,10,9,8,7,6,5].map(regionCount => ({ size: 10, regionCount })),
+      ...[28,24,22,20,18,16].map(regionCount => ({ size: 12, regionCount })),
+      { size: 12, regionCount: 28, ex: 1 },
+      { size: 14, regionCount: 36, ex: 2 },
+      { size: 16, regionCount: 46, ex: 3 },
+      { size: 20, regionCount: 70, ex: 4 },
+      { size: 20, regionCount: 45, ex: 5 }
+    ];
+    const sizes = stagePlan.map(stage => stage.size);
+    const playableNormalImages = 100;
+    const availableExImages = new Set([1, 2, 3, 4, 5]);
+    const stageImagePaths = stagePlan.map((stage, index) =>
+      stage.ex ? `assets/tetesum/EX${stage.ex}.jpg` : `assets/tetesum/${index + 1}.jpg`
+    );
     const ambientExtraImages = [
       "assets/tetesum/31.jpg",
       "assets/tetesum/32.jpg",
@@ -2078,7 +2126,9 @@
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
-    const hintAdZoneId = "5931976";
+    const hintAdProviderSrc = "https://a.pemsrv.com/ad-provider.js";
+    const hintAdClassName = "eas6a97888e33";
+    const hintAdZoneId = "5932074";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = ambientExtraImages.concat(stageImagePaths.slice(-7));
@@ -2164,17 +2214,24 @@
       return index;
     }
 
+    function stageHasImage(index) {
+      const plan = stagePlan[index];
+      if (!plan) return false;
+      if (plan.ex) return availableExImages.has(plan.ex);
+      return index < playableNormalImages;
+    }
+
     function makeStage(size, index) {
-      const legacyIndex = index - legacyStageOffset;
-      const sceneIndex = index < legacyStageOffset ? index : legacyIndex;
+      const plan = stagePlan[index];
+      const sceneIndex = plan.ex ? normalStageCount + plan.ex : index;
       const scene = sceneSets[sceneIndex % sceneSets.length];
-      const regions = makeStageRegions(size, index);
+      const regions = makeStageRegions(size, index, plan.regionCount);
       const values = makeValues(size, index + 3);
       const solution = makeSolution(size, regions, index + 5);
       const regionColors = assignRegionColors(regions, Math.max(...regions.flat()) + 1, size, index);
       return {
         name: `${scene[0]} ${size}×${size}`,
-        displayName: index === sizes.length - 1 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
+        displayName: plan.ex ? `EX${plan.ex} ${size}×${size}` : `${scene[0]} ${size}×${size}`,
         size,
         regions,
         regionCount: Math.max(...regions.flat()) + 1,
@@ -2193,13 +2250,14 @@
     }
 
     function makeStagePreview(index) {
-      const legacyIndex = index - legacyStageOffset;
-      const sceneIndex = index < legacyStageOffset ? index : legacyIndex;
+      const plan = stagePlan[index];
+      const sceneIndex = plan.ex ? normalStageCount + plan.ex : index;
       const scene = sceneSets[sceneIndex % sceneSets.length];
       const size = sizes[index];
       return {
-        displayName: index === sizes.length - 1 ? "おまけ 20×20" : `${scene[0]} ${size}×${size}`,
+        displayName: plan.ex ? `EX${plan.ex} ${size}×${size}` : `${scene[0]} ${size}×${size}`,
         size,
+        regionCount: plan.regionCount,
         scene: scene.slice(1, 6),
         mishap: scene[6],
         imageIndex: getStageImageIndex(index)
@@ -2207,13 +2265,12 @@
     }
 
     function stageNumberLabel(index) {
-      return index === sizes.length - 1 ? "EX1" : String(index + 1);
+      const plan = stagePlan[index];
+      return plan.ex ? `EX${plan.ex}` : String(index + 1);
     }
 
-    function makeStageRegions(size, index) {
-      if (index < 5) return smallStageRegions4(index);
-      if (index >= 5 && index < 10) return smallStageRegions5(index - 5);
-      return makeRegions(size, index + 11);
+    function makeStageRegions(size, index, regionCount) {
+      return makeRegions(size, index + 11, regionCount);
     }
 
     function smallStageRegions4(variant) {
@@ -2293,8 +2350,52 @@
       return patterns[variant % patterns.length];
     }
 
-    function makeRegions(size, seed) {
-      const regionCount = Math.max(1, Math.floor((size * size) / (size === 20 ? 16 : 7)));
+    function makeRegions(size, seed, requestedRegionCount) {
+      const regionCount = Math.max(1, Math.min(requestedRegionCount, Math.floor((size * size) / 5)));
+      const regions = Array.from({ length: size }, () => Array(size).fill(-1));
+      const path = makeRegionPath(size, seed);
+      const sizes = makeRegionSizes(size * size, regionCount, seed);
+      let pathIndex = 0;
+      sizes.forEach((area, id) => {
+        for (let i = 0; i < area; i++) {
+          const [r, c] = path[pathIndex++];
+          regions[r][c] = id;
+        }
+      });
+      return regions;
+    }
+
+    function makeRegionPath(size, seed) {
+      const path = [];
+      const vertical = seed % 2 === 1;
+      for (let a = 0; a < size; a++) {
+        const reverse = (a + seed) % 2 === 1;
+        for (let b = 0; b < size; b++) {
+          const inner = reverse ? size - 1 - b : b;
+          path.push(vertical ? [inner, a] : [a, inner]);
+        }
+      }
+      if (seed % 4 >= 2) path.reverse();
+      return path;
+    }
+
+    function makeRegionSizes(totalCells, regionCount, seed) {
+      const sizes = Array(regionCount).fill(5);
+      let remaining = totalCells - regionCount * 5;
+      const order = Array.from({ length: regionCount }, (_, id) => id)
+        .sort((a, b) => regionNoise(0, a, a, seed) - regionNoise(0, b, b, seed));
+      let cursor = 0;
+      while (remaining > 0) {
+        const id = order[cursor % order.length];
+        const add = Math.min(remaining, 1 + Math.floor(Math.abs(regionNoise(cursor, id, id, seed)) * 3));
+        sizes[id] += add;
+        remaining -= add;
+        cursor++;
+      }
+      return sizes;
+    }
+
+    function growRegions(size, seed, regionCount) {
       const regions = Array.from({ length: size }, () => Array(size).fill(-1));
       const seeds = [];
 
@@ -2439,7 +2540,7 @@
       const adjacency = makeRegionAdjacency(regions, regionCount, size);
       const order = Array.from({ length: regionCount }, (_, id) => id)
         .sort((a, b) => adjacency[b].size - adjacency[a].size || a - b);
-      const shiftedPalette = palette.map((_, index) => palette[(index + seed * 3) % palette.length]);
+      const shiftedPalette = areaPalette.map((_, index) => areaPalette[(index + seed * 3) % areaPalette.length]);
       const assigned = Array(regionCount).fill(null);
 
       order.forEach(id => {
@@ -2542,7 +2643,7 @@
 
     function pickAmbientImage() {
       const unlockedImages = [...completedStages]
-        .filter(index => index >= 0 && index < sizes.length)
+        .filter(index => index >= 0 && index < sizes.length && stageHasImage(index))
         .map(index => makePuzzleImagePath(makeStagePreview(index)));
       const choices = ambientBaseImages.concat(unlockedImages);
       return choices[Math.floor(Math.random() * choices.length)] || ambientBaseImages[0];
@@ -3194,17 +3295,26 @@
 
     function showClearModal(last) {
       const stage = getStage(state.stageIndex);
+      const nextPlayable = findNextPlayableStage(state.stageIndex);
       clearImage.style.setProperty("--clear-image", makePuzzleImage(stage));
       nextStageButton.textContent = "次のステージへ";
-      nextStageButton.style.display = last ? "none" : "";
+      nextStageButton.style.display = last || nextPlayable === null ? "none" : "";
       clearModal.classList.add("active");
+    }
+
+    function findNextPlayableStage(fromIndex) {
+      for (let index = fromIndex + 1; index < sizes.length; index++) {
+        if (stageHasImage(index)) return index;
+      }
+      return null;
     }
 
     function advanceAfterClear() {
       if (!clearModal.classList.contains("active")) return;
       clearModal.classList.remove("active");
-      if (state.stageIndex >= sizes.length - 1) showScreen("stage");
-      else startStage(state.stageIndex + 1);
+      const nextPlayable = findNextPlayableStage(state.stageIndex);
+      if (nextPlayable === null) showScreen("stage");
+      else startStage(nextPlayable);
     }
 
     function playFanfare() {
@@ -3254,7 +3364,7 @@
     }
 
     function updateStatus() {
-      stageLabel.textContent = state.stageIndex === sizes.length - 1 ? "EX1" : `${state.stageIndex + 1} / ${sizes.length - 1}`;
+      stageLabel.textContent = stagePlan[state.stageIndex].ex ? stageNumberLabel(state.stageIndex) : `${state.stageIndex + 1} / ${normalStageCount}`;
       sizeLabel.textContent = `${state.size}×${state.size}`;
       const hpPercent = `${Math.max(0, Math.min(3, state.lives)) / 3 * 100}%`;
       lifeLabel.style.setProperty("--hp-fill", hpPercent);
@@ -3346,7 +3456,7 @@
 
     function renderGallery() {
       galleryGrid.innerHTML = "";
-      const unlocked = [...completedStages].sort((a, b) => a - b);
+      const unlocked = [...completedStages].filter(index => stageHasImage(index)).sort((a, b) => a - b);
       if (!unlocked.length) {
         galleryGrid.innerHTML = '<div class="gallery-empty">まだ画像が解放されていません。<br>ステージをクリアするとここに並びます。</div>';
         return;
@@ -3391,14 +3501,16 @@
       stageGrid.innerHTML = "";
       sizes.forEach((_, index) => {
         const stage = makeStagePreview(index);
-        const regionCount = getStage(index).regionCount;
+        const regionCount = stage.regionCount;
+        const playable = stageHasImage(index);
         const button = document.createElement("button");
-        button.className = `stage-card ${completedStages.has(index) ? "completed" : ""}`;
-        if (index === sizes.length - 1) button.classList.add("ex-stage");
+        button.className = `stage-card stage-size-${stage.size} ${completedStages.has(index) ? "completed" : ""} ${playable ? "" : "locked"}`;
+        if (stagePlan[index].ex) button.classList.add("ex-stage");
         button.type = "button";
+        button.disabled = !playable;
         button.innerHTML = `<strong>${stageNumberLabel(index)}</strong><span class="check">✓</span>`;
-        button.title = `サイズ ${stage.size}×${stage.size} / 色エリア ${regionCount}`;
-        button.addEventListener("click", () => startStage(index));
+        button.title = playable ? `サイズ ${stage.size}×${stage.size} / 色エリア ${regionCount}` : `画像未追加 / サイズ ${stage.size}×${stage.size} / 色エリア ${regionCount}`;
+        if (playable) button.addEventListener("click", () => startStage(index));
         stageGrid.append(button);
       });
     }
@@ -3479,7 +3591,8 @@
       closeHintAdButton.textContent = "閉じる";
       let remaining = 5;
       hintCountdown.textContent = String(remaining);
-      hintAdSlot.innerHTML = `<ins class="eas6a97888e6" data-zoneid="${hintAdZoneId}"></ins>`;
+      ensureHintAdProvider();
+      hintAdSlot.innerHTML = `<ins class="${hintAdClassName}" data-zoneid="${hintAdZoneId}"></ins>`;
       try {
         (window.AdProvider = window.AdProvider || []).push({ serve: {} });
       } catch {}
@@ -3508,6 +3621,15 @@
       if (closeHintAdButton.disabled) return;
       hintAdModal.classList.remove("active");
       showHintCell();
+    }
+
+    function ensureHintAdProvider() {
+      if (document.querySelector(`script[src="${hintAdProviderSrc}"]`)) return;
+      const script = document.createElement("script");
+      script.async = true;
+      script.type = "application/javascript";
+      script.src = hintAdProviderSrc;
+      document.body.append(script);
     }
 
     document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
