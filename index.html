@@ -1319,7 +1319,7 @@
       inset: 0;
       display: none;
       place-items: center;
-      z-index: 20;
+      z-index: 2000;
       padding: 20px;
       background: rgba(23, 32, 45, .62);
     }
@@ -1327,7 +1327,7 @@
     .modal.active { display: grid; }
 
     #clearModal {
-      z-index: 70;
+      z-index: 2200;
       padding: 0;
       background: #0a0e16;
     }
@@ -1698,7 +1698,7 @@
     .gallery-viewer {
       position: fixed;
       inset: 0;
-      z-index: 80;
+      z-index: 2400;
       display: none;
       place-items: center;
       padding: 0;
@@ -1735,7 +1735,7 @@
       position: fixed;
       top: max(12px, env(safe-area-inset-top));
       right: max(12px, env(safe-area-inset-right));
-      z-index: 82;
+      z-index: 2402;
       width: 46px;
       min-width: 46px;
       min-height: 46px;
@@ -1751,16 +1751,35 @@
       position: fixed;
       left: 50%;
       bottom: max(14px, env(safe-area-inset-bottom));
-      z-index: 81;
+      z-index: 2401;
       transform: translateX(-50%);
-      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px 7px 12px;
       border-radius: 999px;
       background: rgba(255,255,255,.86);
       color: #344054;
       font-size: .82rem;
       font-weight: 900;
       white-space: nowrap;
-      pointer-events: none;
+      pointer-events: auto;
+    }
+
+    .gallery-viewer-hint.hidden {
+      display: none;
+    }
+
+    .gallery-viewer-hint button {
+      width: 24px;
+      min-width: 24px;
+      min-height: 24px;
+      border-radius: 50%;
+      background: rgba(23,32,45,.12);
+      color: #17202d;
+      line-height: 1;
+      box-shadow: none;
+      font-size: .9rem;
     }
 
     .gallery-item span {
@@ -2177,7 +2196,10 @@
       <div id="galleryViewer" class="gallery-viewer" aria-hidden="true">
         <button id="galleryViewerClose" class="gallery-viewer-close" type="button" aria-label="閉じる">×</button>
         <img id="galleryViewerImage" alt="">
-        <div class="gallery-viewer-hint">ピンチ / ホイールで拡大縮小</div>
+        <div id="galleryViewerHint" class="gallery-viewer-hint">
+          <span>ピンチ / ホイールで拡大縮小</span>
+          <button id="galleryViewerHintClose" type="button" aria-label="案内を消す">×</button>
+        </div>
       </div>
       <button id="closeGalleryButton" class="primary" type="button">閉じる</button>
     </div>
@@ -2293,6 +2315,8 @@
     const galleryViewer = document.getElementById("galleryViewer");
     const galleryViewerClose = document.getElementById("galleryViewerClose");
     const galleryViewerImage = document.getElementById("galleryViewerImage");
+    const galleryViewerHint = document.getElementById("galleryViewerHint");
+    const galleryViewerHintClose = document.getElementById("galleryViewerHintClose");
     const storageKey = "sumAreaPuzzleCompletedStages";
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
@@ -2329,6 +2353,7 @@
     let galleryDragStart = null;
     let galleryPinchStartDistance = 0;
     let galleryPinchStartZoom = 1;
+    let galleryHintHidden = false;
     const galleryPointers = new Map();
     const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
     const praiseBalloonSrcs = praiseWords.map((word, index) =>
@@ -4394,6 +4419,7 @@
       galleryViewerImage.alt = alt;
       galleryViewer.classList.add("active");
       galleryViewer.setAttribute("aria-hidden", "false");
+      galleryViewerHint.classList.toggle("hidden", galleryHintHidden);
       resetGalleryTransform();
     }
 
@@ -4409,7 +4435,7 @@
     }
 
     function resetGalleryTransform() {
-      galleryZoom = 1;
+      galleryZoom = .88;
       galleryPanX = 0;
       galleryPanY = 0;
       applyGalleryTransform();
@@ -4437,6 +4463,10 @@
       const points = [...galleryPointers.values()];
       if (points.length < 2) return 0;
       return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+    }
+
+    function clampGalleryZoom(value) {
+      return Math.max(.68, Math.min(5, value));
     }
 
     function fitGallery() {
@@ -4686,9 +4716,14 @@
       event.stopPropagation();
       closeGalleryViewer();
     });
+    galleryViewerHintClose.addEventListener("click", event => {
+      event.stopPropagation();
+      galleryHintHidden = true;
+      galleryViewerHint.classList.add("hidden");
+    });
     galleryViewer.addEventListener("dblclick", event => {
       event.preventDefault();
-      galleryZoom = galleryZoom > 1 ? 1 : 2.2;
+      galleryZoom = galleryZoom > 1 ? .88 : 2.2;
       clampGalleryPan();
       applyGalleryTransform();
     });
@@ -4696,7 +4731,7 @@
       if (!galleryViewer.classList.contains("active")) return;
       event.preventDefault();
       const next = galleryZoom * (event.deltaY < 0 ? 1.14 : .88);
-      galleryZoom = Math.max(1, Math.min(5, next));
+      galleryZoom = clampGalleryZoom(next);
       clampGalleryPan();
       applyGalleryTransform();
     }, { passive: false });
@@ -4718,7 +4753,7 @@
       event.preventDefault();
       galleryPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
       if (galleryPointers.size >= 2 && galleryPinchStartDistance) {
-        galleryZoom = Math.max(1, Math.min(5, galleryPinchStartZoom * (galleryPointerDistance() / galleryPinchStartDistance)));
+        galleryZoom = clampGalleryZoom(galleryPinchStartZoom * (galleryPointerDistance() / galleryPinchStartDistance));
         clampGalleryPan();
         applyGalleryTransform();
         return;
