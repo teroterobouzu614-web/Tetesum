@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" id="viewportMeta" />
   <meta name="description" content="Tetesum is an 18+ browser puzzle game with number-sum area puzzles and unlockable AI-generated adult-themed artwork." />
   <meta name="6a97888e-site-verification" content="bf18405ea3ebb48509b84dc1304509be" />
   <title>緊縛エリアナンプレ</title>
@@ -1120,6 +1120,10 @@
       height: 100%;
     }
 
+    .board-wrap.zoomable {
+      touch-action: none;
+    }
+
     .board {
       display: grid;
       grid-template-columns: var(--target) repeat(var(--size), var(--cell));
@@ -1192,7 +1196,12 @@
 
     .cell.confirmed {
       color: #d71935;
-      text-shadow: none;
+      text-shadow:
+        0 1px 0 rgba(255,255,255,.96),
+        1px 0 0 rgba(255,255,255,.9),
+        -1px 0 0 rgba(255,255,255,.9),
+        0 -1px 0 rgba(255,255,255,.9),
+        0 2px 5px rgba(23,32,45,.22);
       box-shadow: none;
     }
 
@@ -1203,13 +1212,18 @@
     .cell.revealed {
       pointer-events: none;
       transform: none;
-      font-weight: 700;
-      text-shadow: 0 1px 0 rgba(255,255,255,.35);
+      font-weight: 900;
+      text-shadow:
+        0 1px 0 rgba(255,255,255,.98),
+        1px 0 0 rgba(255,255,255,.92),
+        -1px 0 0 rgba(255,255,255,.92),
+        0 -1px 0 rgba(255,255,255,.92),
+        0 2px 6px rgba(23,32,45,.28);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.22);
     }
 
     .cell.confirmed.revealed {
-      color: #c7142e;
+      color: #e30032;
     }
 
     .cell.erased.revealed {
@@ -1301,6 +1315,12 @@
     }
 
     .modal.active { display: grid; }
+
+    #clearModal {
+      z-index: 70;
+      padding: 0;
+      background: #0a0e16;
+    }
 
     .modal-box {
       width: min(420px, 100%);
@@ -1399,6 +1419,33 @@
       box-shadow: inset 0 3px 0 rgba(255,255,255,.52), inset 0 -4px 0 rgba(88,16,28,.16), 0 10px 20px rgba(23,32,45,.12);
     }
 
+    .game-over-actions {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .recover-button {
+      grid-column: 1 / -1;
+      min-height: 58px;
+      border: 2px solid #ffd0d8;
+      color: #fff;
+      background:
+        linear-gradient(110deg, transparent 0 28%, rgba(255,255,255,.75) 38%, transparent 50%),
+        linear-gradient(180deg, #ff8d9b 0%, #f03450 52%, #b9142d 100%);
+      background-size: 220% 100%, 100% 100%;
+      box-shadow:
+        inset 0 3px 0 rgba(255,255,255,.72),
+        inset 0 -5px 0 rgba(88,16,28,.24),
+        0 0 0 4px rgba(255,48,80,.22),
+        0 14px 28px rgba(207,35,61,.28);
+      animation: recoverShine 1.45s linear infinite;
+    }
+
+    @keyframes recoverShine {
+      from { background-position: 220% 0, 0 0; transform: translateY(0); }
+      50% { transform: translateY(-1px); }
+      to { background-position: -80% 0, 0 0; transform: translateY(0); }
+    }
+
     .modal-actions button:disabled {
       opacity: .55;
       cursor: wait;
@@ -1414,21 +1461,32 @@
     }
 
     .clear-box {
-      width: min(560px, 100%);
+      width: 100vw;
+      height: 100dvh;
+      max-height: none;
       position: relative;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: 10px;
-      overflow: auto;
+      grid-template-rows: 1fr auto;
+      gap: 0;
+      overflow: hidden;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: #0a0e16;
+      box-shadow: none;
       animation: clearPop .46s cubic-bezier(.18, .86, .2, 1.08) both;
     }
 
     .clear-fanfare {
-      position: relative;
-      min-height: 84px;
-      margin: -4px 0 0;
+      position: absolute;
+      left: 50%;
+      top: max(16px, env(safe-area-inset-top));
+      z-index: 4;
+      min-height: 0;
+      margin: 0;
       display: grid;
       place-items: center;
+      transform: translateX(-50%);
     }
 
     .clear-fanfare::before,
@@ -1455,15 +1513,15 @@
       z-index: 1;
       display: inline-grid;
       place-items: center;
-      min-width: min(82vw, 340px);
-      padding: 12px 18px;
+      min-width: min(64vw, 300px);
+      padding: 10px 18px;
       border: 4px solid #fff;
       border-radius: 16px;
       background:
         linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,0) 48%),
         linear-gradient(135deg, #ff4968, #ffb12e 48%, #22bfe5);
       color: #fff;
-      font-size: clamp(2rem, 8vw, 3.6rem);
+      font-size: clamp(1.85rem, 7vw, 3.4rem);
       font-weight: 950;
       line-height: 1;
       text-shadow: 0 3px 0 rgba(23,32,45,.22);
@@ -1474,6 +1532,7 @@
     .clear-sparks {
       position: absolute;
       inset: 0;
+      z-index: 3;
       pointer-events: none;
       background:
         radial-gradient(circle at 12% 24%, #ffd35a 0 4px, transparent 5px),
@@ -1507,15 +1566,38 @@
 
     .clear-image {
       width: 100%;
-      height: min(54dvh, 420px);
-      min-height: 220px;
-      border: 3px solid var(--line);
-      border-radius: 14px;
+      height: 100%;
+      min-height: 0;
+      border: 0;
+      border-radius: 0;
       margin: 0;
       background: var(--clear-image);
-      background-size: cover;
+      background-size: contain;
       background-position: center;
-      box-shadow: inset 0 0 0 4px rgba(255,255,255,.25);
+      background-repeat: no-repeat;
+      box-shadow: none;
+    }
+
+    .clear-box .modal-actions {
+      position: absolute;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      z-index: 5;
+      width: min(520px, calc(100vw - 24px));
+      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.88);
+      box-shadow: 0 12px 30px rgba(0,0,0,.24);
+    }
+
+    #clearTitleButton {
+      background: linear-gradient(180deg, #f3fff1, #bff0b7 58%, #93dc8b);
+      color: #1d5b2b;
+      box-shadow: inset 0 2px 0 rgba(255,255,255,.78), inset 0 -3px 0 rgba(38,112,51,.14), 0 8px 18px rgba(23,32,45,.12);
     }
 
     .gallery-box {
@@ -1525,16 +1607,17 @@
       grid-template-rows: auto 1fr auto;
       gap: 10px;
       overflow: hidden;
+      position: relative;
     }
 
     .gallery-grid {
       min-height: 0;
       overflow: auto;
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      grid-auto-rows: var(--gallery-cell, 160px);
+      grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      grid-auto-rows: auto;
       align-content: start;
-      gap: 10px;
+      gap: 8px;
       padding: 6px;
       isolation: isolate;
       overscroll-behavior: contain;
@@ -1545,9 +1628,9 @@
       min-width: 0;
       min-height: 0;
       width: 100%;
-      height: var(--gallery-cell, 160px);
-      border: 3px solid var(--line);
-      border-radius: 12px;
+      aspect-ratio: 1 / 1;
+      border: 2px solid var(--line);
+      border-radius: 8px;
       background: #f4f6fb;
       position: relative;
       z-index: 0;
@@ -1556,20 +1639,12 @@
       transition: transform .16s ease, box-shadow .16s ease;
     }
 
-    .gallery-item.expanded {
-      grid-column: 1 / -1;
-      height: min(72dvh, 720px);
-      z-index: 4;
-      cursor: zoom-out;
-      box-shadow: 0 18px 44px rgba(23,32,45,.20);
-    }
-
     .gallery-item img {
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      padding: 6px;
+      object-fit: cover;
+      padding: 0;
     }
 
     .gallery-item.loading::after {
@@ -1584,6 +1659,98 @@
       font-size: .78rem;
       font-weight: 900;
       box-shadow: 0 4px 12px rgba(23,32,45,.12);
+    }
+
+    .gallery-loading {
+      min-height: min(52dvh, 420px);
+      grid-column: 1 / -1;
+      display: grid;
+      place-items: center;
+      gap: 12px;
+      color: #344054;
+      font-weight: 900;
+    }
+
+    .gallery-loading::before {
+      content: "";
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 5px solid rgba(52,64,84,.16);
+      border-top-color: #ff5272;
+      animation: spin .75s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .gallery-viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      place-items: center;
+      padding: 0;
+      background: rgba(10,14,22,.94);
+      cursor: grab;
+      touch-action: none;
+      overflow: hidden;
+    }
+
+    .gallery-viewer.active {
+      display: grid;
+    }
+
+    .gallery-viewer.dragging {
+      cursor: grabbing;
+    }
+
+    .gallery-viewer img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 0;
+      background: #0a0e16;
+      transform: translate3d(var(--gallery-pan-x, 0px), var(--gallery-pan-y, 0px), 0) scale(var(--gallery-zoom, 1));
+      transform-origin: center;
+      will-change: transform;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none;
+    }
+
+    .gallery-viewer-close {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      right: max(12px, env(safe-area-inset-right));
+      z-index: 82;
+      width: 46px;
+      min-width: 46px;
+      min-height: 46px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      color: #17202d;
+      font-size: 1.5rem;
+      line-height: 1;
+      box-shadow: 0 10px 28px rgba(0,0,0,.28);
+    }
+
+    .gallery-viewer-hint {
+      position: fixed;
+      left: 50%;
+      bottom: max(14px, env(safe-area-inset-bottom));
+      z-index: 81;
+      transform: translateX(-50%);
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.86);
+      color: #344054;
+      font-size: .82rem;
+      font-weight: 900;
+      white-space: nowrap;
+      pointer-events: none;
     }
 
     .gallery-item span {
@@ -1675,12 +1842,17 @@
         padding: 18px;
       }
       .clear-box {
-        width: min(100% - 8px, 520px);
-        gap: 8px;
-        padding: 14px;
+        width: 100vw;
+        height: 100dvh;
+        max-height: none;
+        gap: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
       }
       .clear-fanfare {
-        min-height: 62px;
+        top: max(12px, env(safe-area-inset-top));
+        min-height: 0;
         margin: 0;
       }
       .clear-fanfare::before {
@@ -1699,23 +1871,23 @@
         font-size: clamp(1.55rem, 9vw, 2.35rem);
       }
       .clear-image {
-        height: min(48dvh, 360px);
-        min-height: 150px;
-        border-radius: 12px;
+        height: 100%;
+        min-height: 0;
+        border-radius: 0;
       }
       .clear-box .modal-actions {
-        position: sticky;
-        bottom: 0;
-        background: #fff;
-        padding-top: 4px;
+        position: absolute;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        background: rgba(255,255,255,.9);
+        padding: 8px;
       }
       .policy-box h2,
       .age-box h2 {
         font-size: 1.55rem;
       }
       .gallery-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-auto-rows: var(--gallery-cell, 150px);
+        grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+        grid-auto-rows: auto;
         gap: 8px;
         padding: 4px;
       }
@@ -1956,10 +2128,23 @@
     <div class="modal-box">
       <img id="failBalloon" class="fail-balloon" alt="失敗..." />
       <h2 id="gameOverTitle">ゲームオーバー</h2>
-      <div class="modal-actions">
+      <div class="modal-actions game-over-actions">
         <button id="retryButton" type="button">もう一度</button>
         <button id="returnTitleButton" class="primary" type="button">タイトルに戻る</button>
+        <button id="recoverButton" class="recover-button" type="button">広告を見て全回復</button>
       </div>
+    </div>
+  </div>
+
+  <div id="recoverAdModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="recoverAdTitle">
+    <div class="modal-box">
+      <h2 id="recoverAdTitle">回復広告</h2>
+      <p>広告のあとにライフが全回復します。</p>
+      <div id="recoverCountdown" class="hint-countdown">20</div>
+      <div id="recoverAdSlot" class="ad-slot" aria-label="回復広告"></div>
+      <div id="recoverInstantAdSlot" class="ad-slot" aria-label="回復用インスタント広告"></div>
+      <div id="recoverInstantAdSlot2" class="ad-slot" aria-label="回復用インスタント広告2"></div>
+      <div id="recoverInstantAdSlot3" class="ad-slot" aria-label="回復用インスタント広告3"></div>
     </div>
   </div>
 
@@ -1979,6 +2164,11 @@
     <div class="modal-box gallery-box">
       <h2 id="galleryTitle">ギャラリー</h2>
       <div id="galleryGrid" class="gallery-grid"></div>
+      <div id="galleryViewer" class="gallery-viewer" aria-hidden="true">
+        <button id="galleryViewerClose" class="gallery-viewer-close" type="button" aria-label="閉じる">×</button>
+        <img id="galleryViewerImage" alt="">
+        <div class="gallery-viewer-hint">ピンチ / ホイールで拡大縮小</div>
+      </div>
       <button id="closeGalleryButton" class="primary" type="button">閉じる</button>
     </div>
   </div>
@@ -2006,7 +2196,7 @@
       ...[12,12,11,11,10,10,9,8,8,7,6,6,5,5,4].map(regionCount => ({ size: 8, regionCount })),
       ...[16,15,15,14,13,12,11,10,9,8,7,7,6,5,5].map(regionCount => ({ size: 9, regionCount })),
       ...[20,18,17,16,15,14,13,12,10,9,8,7,6,5].map(regionCount => ({ size: 10, regionCount })),
-      ...[28,24,22,20,18,16].map(regionCount => ({ size: 12, regionCount })),
+      ...[22,20,18,16,14,12].map(regionCount => ({ size: 11, regionCount })),
       { size: 12, regionCount: 28, ex: 1 },
       { size: 14, regionCount: 36, ex: 2 },
       { size: 16, regionCount: 46, ex: 3 },
@@ -2056,7 +2246,9 @@
     const stageGrid = document.getElementById("stageGrid");
     const titleAdSlot = document.getElementById("titleAdSlot");
     const stageAdSlot = document.getElementById("stageAdSlot");
+    const boardWrap = document.querySelector(".board-wrap");
     const boardEl = document.getElementById("board");
+    const viewportMeta = document.getElementById("viewportMeta");
     const stageLabel = document.getElementById("stageLabel");
     const sizeLabel = document.getElementById("sizeLabel");
     const lifeLabel = document.getElementById("lifeLabel");
@@ -2071,6 +2263,12 @@
     const hintInstantAdSlot = document.getElementById("hintInstantAdSlot");
     const hintCountdown = document.getElementById("hintCountdown");
     const gameOverModal = document.getElementById("gameOverModal");
+    const recoverAdModal = document.getElementById("recoverAdModal");
+    const recoverAdSlot = document.getElementById("recoverAdSlot");
+    const recoverInstantAdSlot = document.getElementById("recoverInstantAdSlot");
+    const recoverInstantAdSlot2 = document.getElementById("recoverInstantAdSlot2");
+    const recoverInstantAdSlot3 = document.getElementById("recoverInstantAdSlot3");
+    const recoverCountdown = document.getElementById("recoverCountdown");
     const exitModal = document.getElementById("exitModal");
     const settingsModal = document.getElementById("settingsModal");
     const ageGateModal = document.getElementById("ageGateModal");
@@ -2082,6 +2280,9 @@
     const nextStageButton = document.getElementById("nextStageButton");
     const galleryModal = document.getElementById("galleryModal");
     const galleryGrid = document.getElementById("galleryGrid");
+    const galleryViewer = document.getElementById("galleryViewer");
+    const galleryViewerClose = document.getElementById("galleryViewerClose");
+    const galleryViewerImage = document.getElementById("galleryViewerImage");
     const storageKey = "sumAreaPuzzleCompletedStages";
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const settingsKey = "sumAreaPuzzleSettings";
@@ -2102,9 +2303,23 @@
     let ambientImage = null;
     let forceClearTimer = null;
     let hintAdTimer = null;
+    let recoverAdTimer = null;
+    let clearCheckTimer = null;
+    let clearResolving = false;
     let hintAnimationTimer = null;
     let hintAdStageIndex = null;
     let hintAdPrepared = false;
+    let boardScale = 1;
+    const boardPointers = new Map();
+    let pinchStartDistance = 0;
+    let pinchStartScale = 1;
+    let galleryZoom = 1;
+    let galleryPanX = 0;
+    let galleryPanY = 0;
+    let galleryDragStart = null;
+    let galleryPinchStartDistance = 0;
+    let galleryPinchStartZoom = 1;
+    const galleryPointers = new Map();
     const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
     const praiseBalloonSrcs = praiseWords.map((word, index) =>
       makeBalloonImage(word, ["#22a9cc", "#ff5272", "#7c3aed", "#f59e0b", "#16a34a", "#e11d48"][index], "#fff4a8", "#55cde9")
@@ -2326,27 +2541,30 @@
       const regionCount = Math.max(1, Math.min(requestedRegionCount, Math.floor((size * size) / 5)));
       let bestWarpedRegions = null;
       let bestWarpedScore = -Infinity;
-      const warpedAttempts = size <= 5 ? 36 : size <= 10 ? 54 : 28;
+      const warpedAttempts = size <= 5 ? 36 : size <= 7 ? 54 : size <= 10 ? 78 : size <= 12 ? 84 : 72;
       for (let attempt = 0; attempt < warpedAttempts; attempt++) {
         const regions = makeWarpedVoronoiRegions(size, seed + attempt * 61, regionCount);
         if (!regions) continue;
         diversifyRegionEdges(regions, regionCount, size, seed + attempt * 61);
+        if (straightOnlyRegionCount(regions, regionCount, size) > 1) continue;
         const score = regionComplexityScore(regions, regionCount, size) - repeatedLayoutPenalty(regions, size, usedLayoutSignatures);
         if (score > bestWarpedScore) {
           bestWarpedScore = score;
           bestWarpedRegions = regions;
         }
-        if (bestWarpedRegions && !usedLayoutSignatures.has(canonicalStageLayoutSignature(bestWarpedRegions, size)) && bestWarpedScore > -200) break;
+        const earlyScore = size >= 12 ? 720 : 120;
+        if (bestWarpedRegions && !usedLayoutSignatures.has(canonicalStageLayoutSignature(bestWarpedRegions, size)) && bestWarpedScore > earlyScore) break;
       }
       if (bestWarpedRegions && !layoutAlreadyUsed(bestWarpedRegions, size, usedLayoutSignatures)) return bestWarpedRegions;
 
       let bestRegions = null;
       let bestScore = -Infinity;
-      const attempts = size <= 5 ? 28 : size <= 10 ? 34 : 16;
+      const attempts = size <= 5 ? 28 : size <= 7 ? 34 : size <= 10 ? 50 : size <= 12 ? 50 : 60;
       for (let attempt = 0; attempt < attempts; attempt++) {
         const regions = growTargetRegions(size, seed + attempt * 37, regionCount);
         if (!regions) continue;
         diversifyRegionEdges(regions, regionCount, size, seed + attempt * 37);
+        if (straightOnlyRegionCount(regions, regionCount, size) > 1) continue;
         const score = regionComplexityScore(regions, regionCount, size) - repeatedLayoutPenalty(regions, size, usedLayoutSignatures);
         if (score > bestScore) {
           bestScore = score;
@@ -2358,6 +2576,7 @@
       for (let attempt = 0; attempt < 80; attempt++) {
         const fallbackSeed = seed + attempt * 97;
         const regions = makeHilbertRegions(size, fallbackSeed, regionCount) || makePathFallbackRegions(size, fallbackSeed, regionCount);
+        if (straightOnlyRegionCount(regions, regionCount, size) > 1) continue;
         if (!layoutAlreadyUsed(regions, size, usedLayoutSignatures)) return regions;
       }
 
@@ -2685,13 +2904,13 @@
         else if (regions[nr][nc] === -1) empty++;
         else other++;
       }
-      const thinPenalty = same <= 1 ? 34 : 0;
+      const thinPenalty = same <= 1 ? 130 : 0;
       const blobPenalty = same >= 3 ? 30 : 0;
-      const blockPenalty = sameColoredBlockCount(regions, r, c, id, size) * 44;
+      const blockPenalty = sameColoredBlockCount(regions, r, c, id, size) * 28;
       const edgePenalty = (r === 0 || c === 0 || r === size - 1 || c === size - 1) ? 6 : 0;
       const anchorPenalty = anchor ? (Math.abs(anchor.r - r) + Math.abs(anchor.c - c)) * 2 : 0;
       const noise = regionNoise(r, c, id, seed) * 18;
-      return thinPenalty + blobPenalty + blockPenalty + edgePenalty + anchorPenalty - other * 24 - empty * 3 + noise;
+      return thinPenalty + blobPenalty + blockPenalty + edgePenalty + anchorPenalty - other * 12 - empty * 3 + noise;
     }
 
     function sameColoredBlockCount(regions, r, c, id, size) {
@@ -2738,6 +2957,7 @@
     function regionShapePenalty(regions, regionCount, size) {
       const signatures = new Map();
       let penalty = 0;
+      let straightOnlyRegions = 0;
 
       for (let id = 0; id < regionCount; id++) {
         const cells = getRegionCellsFromGrid(regions, id, size);
@@ -2751,22 +2971,40 @@
           const sameNeighbors = neighbors(r, c, size).filter(([nr, nc]) => regions[nr][nc] === id).length;
           if (sameNeighbors <= 1) leafCells++;
         });
-        if (leafCells > Math.max(1, Math.floor(cells.length * .22))) penalty += (leafCells - 1) * 42;
+        if (leafCells > Math.max(1, Math.floor(cells.length * .10))) penalty += (leafCells - 1) * 210;
 
         const rows = cells.map(([r]) => r);
         const cols = cells.map(([, c]) => c);
         const height = Math.max(...rows) - Math.min(...rows) + 1;
         const width = Math.max(...cols) - Math.min(...cols) + 1;
         const aspect = Math.max(width / height, height / width);
-        if (aspect > 2.35) penalty += Math.round((aspect - 2.35) * cells.length * 36);
-        if ((width <= 2 || height <= 2) && cells.length >= 7) penalty += cells.length * 28;
+        if (aspect > 1.48) penalty += Math.round((aspect - 1.48) * cells.length * 250);
+        if (width === 1 || height === 1) straightOnlyRegions++;
+        if ((width <= 3 || height <= 3) && cells.length >= 7) penalty += cells.length * 150;
+        if ((width <= 2 || height <= 2) && cells.length >= 6) penalty += cells.length * 380;
+        if ((width <= 1 || height <= 1) && cells.length >= 5) penalty += cells.length * 760;
 
         const signature = canonicalRegionSignature(cells);
         if (signatures.has(signature)) penalty += 1400;
         signatures.set(signature, id);
       }
 
+      if (straightOnlyRegions > 1) penalty += (straightOnlyRegions - 1) * 25000;
       return penalty;
+    }
+
+    function straightOnlyRegionCount(regions, regionCount, size) {
+      let count = 0;
+      for (let id = 0; id < regionCount; id++) {
+        const cells = getRegionCellsFromGrid(regions, id, size);
+        if (!cells.length) continue;
+        const rows = cells.map(([r]) => r);
+        const cols = cells.map(([, c]) => c);
+        const height = Math.max(...rows) - Math.min(...rows) + 1;
+        const width = Math.max(...cols) - Math.min(...cols) + 1;
+        if (width === 1 || height === 1) count++;
+      }
+      return count;
     }
 
     function getRegionCellsFromGrid(regions, id, size) {
@@ -3139,6 +3377,10 @@
     }
 
     function makeGalleryImagePath(index) {
+      return stageImagePaths[index] || stageImagePaths[stageImagePaths.length - 1];
+    }
+
+    function makeGalleryThumbPath(index) {
       const plan = stagePlan[index];
       const label = plan?.ex ? `EX${plan.ex}` : String(index + 1);
       return `assets/tetesum/gallery-thumbs/${label}.jpg`;
@@ -3642,6 +3884,10 @@
 
     function startStage(index) {
       cancelHintFlow();
+      cancelRecoverFlow();
+      clearTimeout(clearCheckTimer);
+      clearCheckTimer = null;
+      clearResolving = false;
       const stage = getStage(index);
       state.stageIndex = index;
       state.size = stage.size;
@@ -3658,6 +3904,8 @@
       state.tool = "confirm";
       state.lives = 3;
       state.won = false;
+      resetBoardZoom();
+      updateZoomMode();
       computeTargets();
       boardEl.style.setProperty("--puzzle-image", makePuzzleImage(stage));
       boardEl.style.setProperty("--size", stage.size);
@@ -3686,6 +3934,37 @@
       document.documentElement.style.setProperty("--cell", `${cell}px`);
       document.documentElement.style.setProperty("--target", `${Math.round(cell * .92)}px`);
       boardEl.style.setProperty("--size", state.size);
+    }
+
+    function updateZoomMode() {
+      const zoomable = state.size >= 12;
+      boardWrap.classList.toggle("zoomable", zoomable);
+      if (viewportMeta) {
+        viewportMeta.setAttribute(
+          "content",
+          zoomable
+            ? "width=device-width, initial-scale=1.0, maximum-scale=3.0, user-scalable=yes"
+            : "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        );
+      }
+    }
+
+    function resetBoardZoom() {
+      boardScale = 1;
+      boardPointers.clear();
+      pinchStartDistance = 0;
+      pinchStartScale = 1;
+      applyBoardZoom();
+    }
+
+    function applyBoardZoom() {
+      boardEl.style.zoom = state.size >= 12 ? String(boardScale) : "1";
+    }
+
+    function distanceBetweenPointers() {
+      const points = [...boardPointers.values()];
+      if (points.length < 2) return 0;
+      return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
     }
 
     function render() {
@@ -3739,7 +4018,7 @@
 
       renderRegionSums();
       updateStatus();
-      if (shouldClearStage() && !state.won) winStage();
+      if (!state.won && shouldClearStage()) scheduleClearCheck();
     }
 
     function isRowAligned(r) {
@@ -3787,9 +4066,11 @@
       state.selected[r][c] = wantsConfirm;
       const openedBefore = state.revealedRegions.filter(Boolean).length;
       render();
+      if (state.won) return;
       const opened = state.revealedRegions.filter(Boolean).length;
       if (opened > openedBefore) showPraiseBalloon(opened);
       setMessage("", "");
+      scheduleClearCheck();
     }
 
     function isSolved() {
@@ -3806,15 +4087,35 @@
       return isSolved() || allRegionsRevealed();
     }
 
+    function scheduleClearCheck() {
+      clearTimeout(clearCheckTimer);
+      clearCheckTimer = setTimeout(checkClearStage, 0);
+    }
+
+    function checkClearStage() {
+      clearCheckTimer = null;
+      if (!state.size || state.won || clearResolving) return;
+      updateRevealedRegions();
+      if (!shouldClearStage()) return;
+      clearResolving = true;
+      try {
+        winStage();
+      } finally {
+        clearResolving = false;
+      }
+    }
+
     function forceClearStage() {
       if (!state.size || state.won) return;
       state.selected = state.solution.map(row => row.slice());
       state.decided = emptyGrid(state.size, true);
       state.lives = Math.max(state.lives, 1);
-      winStage();
+      checkClearStage();
     }
 
     function winStage() {
+      clearTimeout(clearCheckTimer);
+      clearCheckTimer = null;
       cancelHintFlow();
       state.won = true;
       markStageCompleted(state.stageIndex);
@@ -3878,6 +4179,39 @@
       cancelHintFlow();
       shakeScreen();
       gameOverModal.classList.add("active");
+    }
+
+    function startRecoverAd() {
+      cancelHintFlow();
+      gameOverModal.classList.remove("active");
+      recoverAdModal.classList.add("active");
+      let remaining = 20;
+      recoverCountdown.textContent = String(remaining);
+      renderAdIntoSlot(recoverAdSlot, standardAdClassName, standardAdZoneId, standardAdProviderSrc, true);
+      renderAdIntoSlot(recoverInstantAdSlot, instantAdClassName, instantAdZoneId, standardAdProviderSrc, true);
+      renderAdIntoSlot(recoverInstantAdSlot2, instantAdClassName, instantAdZoneId, standardAdProviderSrc, true);
+      renderAdIntoSlot(recoverInstantAdSlot3, instantAdClassName, instantAdZoneId, standardAdProviderSrc, true);
+      clearInterval(recoverAdTimer);
+      recoverAdTimer = setInterval(() => {
+        remaining -= 1;
+        recoverCountdown.textContent = String(Math.max(0, remaining));
+        if (remaining <= 0) {
+          clearInterval(recoverAdTimer);
+          recoverAdTimer = null;
+          recoverCountdown.textContent = "全回復します";
+          setTimeout(recoverFromGameOver, 650);
+        }
+      }, 1000);
+    }
+
+    function recoverFromGameOver() {
+      if (!recoverAdModal.classList.contains("active")) return;
+      recoverAdModal.classList.remove("active");
+      state.lives = 3;
+      updateStatus();
+      render();
+      setMessage("", "");
+      scheduleClearCheck();
     }
 
     function shakeScreen() {
@@ -3999,42 +4333,98 @@
         galleryGrid.innerHTML = '<div class="gallery-empty">まだ画像が解放されていません。<br>ステージをクリアするとここに並びます。</div>';
         return;
       }
-      unlocked.forEach(index => {
-        const stage = getStage(index);
-        if (!stage) return;
-        const item = document.createElement("div");
-        item.className = "gallery-item";
-        item.dataset.fullSrc = makeGalleryImagePath(index);
-        const img = document.createElement("img");
-        img.src = item.dataset.fullSrc;
-        img.alt = `${stageNumberLabel(index)}の解放画像`;
-        img.loading = "lazy";
-        img.decoding = "async";
-        const label = document.createElement("span");
-        label.textContent = stageNumberLabel(index);
-        item.append(img, label);
-        item.addEventListener("click", () => {
-          const wasExpanded = item.classList.contains("expanded");
-          galleryGrid.querySelectorAll(".gallery-item.expanded").forEach(openItem => {
-            if (openItem !== item) openItem.classList.remove("expanded");
-          });
-          item.classList.toggle("expanded", !wasExpanded);
-          requestAnimationFrame(() => {
-            fitGallery();
-            if (!wasExpanded) item.scrollIntoView({ block: "nearest", behavior: "smooth" });
-          });
-        });
-        galleryGrid.append(item);
+      renderGalleryBatch(unlocked, 0);
+    }
+
+    function renderGalleryBatch(unlocked, start) {
+      if (!galleryModal.classList.contains("active")) return;
+      const fragment = document.createDocumentFragment();
+      const end = Math.min(unlocked.length, start + 18);
+      for (let i = start; i < end; i++) {
+        const index = unlocked[i];
+        fragment.append(makeGalleryItem(index));
+      }
+      galleryGrid.append(fragment);
+      if (end < unlocked.length) {
+        requestAnimationFrame(() => renderGalleryBatch(unlocked, end));
+      }
+    }
+
+    function makeGalleryItem(index) {
+      const item = document.createElement("div");
+      item.className = "gallery-item";
+      item.dataset.fullSrc = makeGalleryImagePath(index);
+      const img = document.createElement("img");
+      img.src = makeGalleryThumbPath(index);
+      img.alt = `${stageNumberLabel(index)}の解放画像`;
+      img.loading = "lazy";
+      img.decoding = "async";
+      const label = document.createElement("span");
+      label.textContent = stageNumberLabel(index);
+      item.append(img, label);
+      item.addEventListener("click", () => {
+        openGalleryViewer(item.dataset.fullSrc, img.alt);
       });
-      fitGallery();
+      return item;
+    }
+
+    function showGalleryLoading() {
+      closeGalleryViewer();
+      galleryGrid.innerHTML = '<div class="gallery-loading">読み込み中</div>';
+    }
+
+    function openGalleryViewer(src, alt) {
+      galleryViewerImage.src = src;
+      galleryViewerImage.alt = alt;
+      galleryViewer.classList.add("active");
+      galleryViewer.setAttribute("aria-hidden", "false");
+      resetGalleryTransform();
+    }
+
+    function closeGalleryViewer() {
+      galleryViewer.classList.remove("active", "dragging");
+      galleryViewer.setAttribute("aria-hidden", "true");
+      galleryViewerImage.removeAttribute("src");
+      galleryPointers.clear();
+      galleryDragStart = null;
+      galleryPinchStartDistance = 0;
+      galleryPinchStartZoom = 1;
+      resetGalleryTransform();
+    }
+
+    function resetGalleryTransform() {
+      galleryZoom = 1;
+      galleryPanX = 0;
+      galleryPanY = 0;
+      applyGalleryTransform();
+    }
+
+    function applyGalleryTransform() {
+      galleryViewer.style.setProperty("--gallery-zoom", String(galleryZoom));
+      galleryViewer.style.setProperty("--gallery-pan-x", `${galleryPanX}px`);
+      galleryViewer.style.setProperty("--gallery-pan-y", `${galleryPanY}px`);
+    }
+
+    function clampGalleryPan() {
+      if (galleryZoom <= 1) {
+        galleryPanX = 0;
+        galleryPanY = 0;
+        return;
+      }
+      const limitX = window.innerWidth * (galleryZoom - 1) * .55;
+      const limitY = window.innerHeight * (galleryZoom - 1) * .55;
+      galleryPanX = Math.max(-limitX, Math.min(limitX, galleryPanX));
+      galleryPanY = Math.max(-limitY, Math.min(limitY, galleryPanY));
+    }
+
+    function galleryPointerDistance() {
+      const points = [...galleryPointers.values()];
+      if (points.length < 2) return 0;
+      return Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
     }
 
     function fitGallery() {
-      if (!galleryModal.classList.contains("active")) return;
-      const firstItem = galleryGrid.querySelector(".gallery-item");
-      if (!firstItem) return;
-      const width = Math.floor(firstItem.getBoundingClientRect().width);
-      if (width > 0) galleryGrid.style.setProperty("--gallery-cell", `${width}px`);
+      return;
     }
 
     function renderStageCards() {
@@ -4080,18 +4470,27 @@
       hintCountdown.textContent = "5";
     }
 
+    function cancelRecoverFlow() {
+      clearInterval(recoverAdTimer);
+      recoverAdTimer = null;
+      recoverCountdown.textContent = "20";
+      recoverAdModal.classList.remove("active");
+    }
+
     function pickHintCell() {
-      const candidates = [];
+      const confirmCandidates = [];
+      let eraseOnlyCount = 0;
       for (let r = 0; r < state.size; r++) {
         for (let c = 0; c < state.size; c++) {
           const regionId = state.regions[r][c];
           if (state.decided[r][c] || state.revealedRegions[regionId]) continue;
-          candidates.push([r, c]);
+          if (state.solution[r][c]) confirmCandidates.push([r, c]);
+          else eraseOnlyCount++;
         }
       }
-      if (!candidates.length) return null;
-      const confirmCandidates = candidates.filter(([r, c]) => state.solution[r][c]);
-      return (confirmCandidates[0] || candidates[0]).slice();
+      if (confirmCandidates.length) return { type: "cell", cell: confirmCandidates[0].slice() };
+      if (eraseOnlyCount > 0) return { type: "allConfirmed" };
+      return null;
     }
 
     function showHintCell() {
@@ -4104,7 +4503,15 @@
         cancelHintFlow();
         return;
       }
-      state.hintCell = hint;
+      if (hint.type === "allConfirmed") {
+        hintAdModal.classList.remove("active");
+        state.hintCell = null;
+        state.hintAnimating = false;
+        render();
+        setMessage("すべて確定済みです。", "warn");
+        return;
+      }
+      state.hintCell = hint.cell;
       state.hintAnimating = true;
       render();
       setMessage("赤く光ったマスがヒントです。", "warn");
@@ -4226,9 +4633,18 @@
     });
     document.getElementById("stageBackButton").addEventListener("click", () => showScreen("title"));
     document.getElementById("galleryButton").addEventListener("click", () => {
-      renderGallery();
+      showGalleryLoading();
       galleryModal.classList.add("active");
-      requestAnimationFrame(fitGallery);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          try {
+            renderGallery();
+          } catch (error) {
+            console.error(error);
+            galleryGrid.innerHTML = '<div class="gallery-empty">読み込みに失敗しました。<br>もう一度開きなおしてください。</div>';
+          }
+        }, 0);
+      });
     });
     document.getElementById("policyButton").addEventListener("click", () => {
       policyModal.classList.add("active");
@@ -4248,6 +4664,71 @@
     });
     document.getElementById("closeGalleryButton").addEventListener("click", () => {
       galleryModal.classList.remove("active");
+      closeGalleryViewer();
+    });
+    galleryViewerClose.addEventListener("click", event => {
+      event.stopPropagation();
+      closeGalleryViewer();
+    });
+    galleryViewer.addEventListener("dblclick", event => {
+      event.preventDefault();
+      galleryZoom = galleryZoom > 1 ? 1 : 2.2;
+      clampGalleryPan();
+      applyGalleryTransform();
+    });
+    galleryViewer.addEventListener("wheel", event => {
+      if (!galleryViewer.classList.contains("active")) return;
+      event.preventDefault();
+      const next = galleryZoom * (event.deltaY < 0 ? 1.14 : .88);
+      galleryZoom = Math.max(1, Math.min(5, next));
+      clampGalleryPan();
+      applyGalleryTransform();
+    }, { passive: false });
+    galleryViewer.addEventListener("pointerdown", event => {
+      if (!galleryViewer.classList.contains("active") || event.target === galleryViewerClose) return;
+      event.preventDefault();
+      galleryViewer.setPointerCapture?.(event.pointerId);
+      galleryPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (galleryPointers.size === 2) {
+        galleryPinchStartDistance = galleryPointerDistance();
+        galleryPinchStartZoom = galleryZoom;
+      } else {
+        galleryDragStart = { x: event.clientX, y: event.clientY, panX: galleryPanX, panY: galleryPanY };
+        galleryViewer.classList.add("dragging");
+      }
+    });
+    galleryViewer.addEventListener("pointermove", event => {
+      if (!galleryPointers.has(event.pointerId)) return;
+      event.preventDefault();
+      galleryPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (galleryPointers.size >= 2 && galleryPinchStartDistance) {
+        galleryZoom = Math.max(1, Math.min(5, galleryPinchStartZoom * (galleryPointerDistance() / galleryPinchStartDistance)));
+        clampGalleryPan();
+        applyGalleryTransform();
+        return;
+      }
+      if (!galleryDragStart || galleryZoom <= 1) return;
+      galleryPanX = galleryDragStart.panX + event.clientX - galleryDragStart.x;
+      galleryPanY = galleryDragStart.panY + event.clientY - galleryDragStart.y;
+      clampGalleryPan();
+      applyGalleryTransform();
+    });
+    const endGalleryPointer = event => {
+      galleryPointers.delete(event.pointerId);
+      galleryViewer.releasePointerCapture?.(event.pointerId);
+      if (galleryPointers.size < 2) {
+        galleryPinchStartDistance = 0;
+        galleryPinchStartZoom = galleryZoom;
+      }
+      if (!galleryPointers.size) {
+        galleryDragStart = null;
+        galleryViewer.classList.remove("dragging");
+      }
+    };
+    galleryViewer.addEventListener("pointerup", endGalleryPointer);
+    galleryViewer.addEventListener("pointercancel", endGalleryPointer);
+    galleryViewer.addEventListener("contextmenu", event => {
+      event.preventDefault();
     });
     hintButton.addEventListener("click", showHintConfirm);
     document.getElementById("watchHintAdButton").addEventListener("click", startHintAd);
@@ -4278,6 +4759,7 @@
       showScreen("stage");
     });
     document.getElementById("returnTitleButton").addEventListener("click", () => {
+      cancelRecoverFlow();
       gameOverModal.classList.remove("active");
       showScreen("title");
     });
@@ -4294,15 +4776,44 @@
       advanceAfterClear();
     });
     document.getElementById("retryButton").addEventListener("click", () => {
+      cancelRecoverFlow();
       gameOverModal.classList.remove("active");
       startStage(state.stageIndex);
     });
+    document.getElementById("recoverButton").addEventListener("click", startRecoverAd);
     confirmTool.addEventListener("click", () => setTool("confirm"));
     eraseTool.addEventListener("click", () => setTool("erase"));
     lifeLabel.addEventListener("pointerdown", startForceClearHold);
     lifeLabel.addEventListener("pointerup", cancelForceClearHold);
     lifeLabel.addEventListener("pointercancel", cancelForceClearHold);
     lifeLabel.addEventListener("contextmenu", event => event.preventDefault());
+    boardWrap.addEventListener("pointerdown", event => {
+      if (state.size < 12) return;
+      boardPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (boardPointers.size === 2) {
+        event.preventDefault();
+        pinchStartDistance = distanceBetweenPointers();
+        pinchStartScale = boardScale;
+      }
+    });
+    boardWrap.addEventListener("pointermove", event => {
+      if (state.size < 12 || !boardPointers.has(event.pointerId)) return;
+      boardPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (boardPointers.size < 2 || !pinchStartDistance) return;
+      event.preventDefault();
+      const nextScale = pinchStartScale * (distanceBetweenPointers() / pinchStartDistance);
+      boardScale = Math.max(1, Math.min(2.6, nextScale));
+      applyBoardZoom();
+    });
+    const endBoardPointer = event => {
+      boardPointers.delete(event.pointerId);
+      if (boardPointers.size < 2) {
+        pinchStartDistance = 0;
+        pinchStartScale = boardScale;
+      }
+    };
+    boardWrap.addEventListener("pointerup", endBoardPointer);
+    boardWrap.addEventListener("pointercancel", endBoardPointer);
     window.addEventListener("resize", fitBoard);
     window.addEventListener("orientationchange", fitBoard);
     window.addEventListener("resize", fitGallery);
