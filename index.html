@@ -2100,6 +2100,7 @@
     let hintAdTimer = null;
     let hintAnimationTimer = null;
     let hintAdStageIndex = null;
+    let hintAdPrepared = false;
     const praiseWords = ["Good!", "Nice!", "Great!", "Wonderful!", "Excellent!", "Amazing!"];
     const praiseBalloonSrcs = praiseWords.map((word, index) =>
       makeBalloonImage(word, ["#22a9cc", "#ff5272", "#7c3aed", "#f59e0b", "#16a34a", "#e11d48"][index], "#fff4a8", "#55cde9")
@@ -4122,9 +4123,7 @@
       hintAdModal.classList.add("active");
       let remaining = 5;
       hintCountdown.textContent = String(remaining);
-      const hintZone = getHintAdZone();
-      hintAdSlot.innerHTML = `<ins class="${hintZone.className}" data-zoneid="${hintZone.zoneId}"></ins>`;
-      requestAdServe(hintAdProviderSrc);
+      renderHintAd();
       clearInterval(hintAdTimer);
       hintAdTimer = setInterval(() => {
         remaining -= 1;
@@ -4151,21 +4150,37 @@
         : { className: desktopHintAdClassName, zoneId: desktopHintAdZoneId };
     }
 
+    function renderHintAd() {
+      const hintZone = getHintAdZone();
+      hintAdSlot.innerHTML = "";
+      const ins = document.createElement("ins");
+      ins.className = hintZone.className;
+      ins.dataset.zoneid = hintZone.zoneId;
+      hintAdSlot.append(ins);
+      requestAdServe(hintAdProviderSrc);
+    }
+
     function renderStandardAd(slot) {
       if (!slot || slot.dataset.adRendered === "true") return;
       slot.dataset.adRendered = "true";
-      slot.innerHTML = `<ins class="${standardAdClassName}" data-zoneid="${standardAdZoneId}"></ins>`;
+      slot.innerHTML = "";
+      const ins = document.createElement("ins");
+      ins.className = standardAdClassName;
+      ins.dataset.zoneid = standardAdZoneId;
+      slot.append(ins);
       requestAdServe(standardAdProviderSrc);
     }
 
     function requestAdServe(providerSrc) {
       ensureAdProvider(providerSrc).finally(() => {
-        requestAnimationFrame(() => {
-          try {
-            (window.AdProvider = window.AdProvider || []).push({ serve: {} });
-          } catch {}
-        });
+        serveAdsNow();
       });
+    }
+
+    function serveAdsNow() {
+      try {
+        (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+      } catch {}
     }
 
     function ensureAdProvider(providerSrc) {
@@ -4180,6 +4195,12 @@
         script.addEventListener("error", resolve, { once: true });
         document.body.append(script);
       });
+    }
+
+    function prepareHintAds() {
+      if (hintAdPrepared) return;
+      hintAdPrepared = true;
+      ensureAdProvider(hintAdProviderSrc);
     }
 
     document.getElementById("startButton").addEventListener("click", () => showScreen("stage"));
@@ -4284,6 +4305,7 @@
     updateAmbientImage();
     renderStageCards();
     renderStandardAd(titleAdSlot);
+    prepareHintAds();
     showAgeGateIfNeeded();
   </script>
 </body>
