@@ -4167,7 +4167,6 @@
 
     function renderStandardAd(slot) {
       if (!slot || slot.dataset.adRendered === "true") return;
-      slot.dataset.adRendered = "true";
       renderAdIntoSlot(slot, standardAdClassName, standardAdZoneId, standardAdProviderSrc);
     }
 
