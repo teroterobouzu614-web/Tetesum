@@ -300,6 +300,56 @@
       z-index: 1;
     }
 
+    .video-ad-slot {
+      width: 100%;
+      min-height: min(58dvh, 520px);
+      background: #05070d;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 14px 28px rgba(0,0,0,.20);
+    }
+
+    .ad-modal-box {
+      width: min(1100px, calc(100vw - 12px));
+      max-height: calc(100dvh - 12px);
+      display: grid;
+      grid-template-rows: none;
+      align-content: start;
+      gap: 10px;
+      padding: 14px;
+      overflow: auto;
+    }
+
+    .ad-modal-box h2,
+    .ad-modal-box p,
+    .ad-modal-box .hint-countdown {
+      margin: 0;
+    }
+
+    .ad-modal-box .ad-slot {
+      width: 100%;
+      min-height: 250px;
+      margin: 0 auto;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .ad-modal-box .video-ad-slot {
+      align-self: stretch;
+      min-height: min(52dvh, 460px);
+      background: #05070d;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 10px;
+      overflow: visible;
+    }
+
+    .ad-modal-box ins,
+    .ad-modal-box iframe {
+      max-width: 100%;
+    }
+
     .image-button {
       width: min(40vw, 210px);
       min-width: 150px;
@@ -759,6 +809,34 @@
       z-index: 1;
     }
 
+    .stage-tabs {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0 6px;
+    }
+
+    .stage-tab {
+      min-height: 38px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(190,202,218,.9);
+      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(232,239,248,.92));
+      color: #3a4658;
+      font-weight: 900;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 5px 12px rgba(23,32,45,.08);
+    }
+
+    .stage-tab.active {
+      border-color: rgba(255,101,133,.72);
+      background: linear-gradient(180deg, #fff, #ffe0e8 58%, #ffc0cf);
+      color: #a51e42;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 6px 14px rgba(255,82,114,.18);
+    }
+
     .stage-loading {
       position: fixed;
       inset: 0;
@@ -831,8 +909,11 @@
     .stage-card.stage-size-8 { background: linear-gradient(180deg, #fff, #eee7ff 64%, #cfc0ff); }
     .stage-card.stage-size-9 { background: linear-gradient(180deg, #fff, #ffe9d7 64%, #ffc49a); }
     .stage-card.stage-size-10 { background: linear-gradient(180deg, #fff, #dff5f0 64%, #aee4d8); }
+    .stage-card.stage-size-11 { background: linear-gradient(180deg, #fff, #eef2fb 64%, #cfd9ec); }
     .stage-card.stage-size-12 { background: linear-gradient(180deg, #fff, #e8eef8 64%, #c6d4ea); }
+    .stage-card.stage-size-13 { background: linear-gradient(180deg, #fff, #eaf7ee 64%, #bee9cd); }
     .stage-card.stage-size-14 { background: linear-gradient(180deg, #fff, #f8e8f3 64%, #edbbdc); }
+    .stage-card.stage-size-15 { background: linear-gradient(180deg, #fff, #fff0dd 64%, #f5cf9d); }
     .stage-card.stage-size-16 { background: linear-gradient(180deg, #fff, #e7f0ff 64%, #bdd3ff); }
     .stage-card.stage-size-20 { background: linear-gradient(180deg, #fff, #f0eadf 64%, #d9c8aa); }
 
@@ -1811,12 +1892,14 @@
       width: 24px;
       min-width: 24px;
       min-height: 24px;
+      padding: 0;
       border-radius: 50%;
       background: rgba(23,32,45,.12);
       color: #17202d;
       line-height: 1;
       box-shadow: none;
       font-size: .9rem;
+      touch-action: manipulation;
     }
 
     .gallery-item span {
@@ -2078,6 +2161,7 @@
       </div>
       <button id="stageBackButton" type="button">タイトルへ</button>
     </header>
+    <nav id="stageTabs" class="stage-tabs" aria-label="ステージ範囲"></nav>
     <section id="stageGrid" class="stage-grid" aria-label="ステージ一覧"></section>
     <div id="stageAdSlot" class="ad-slot stage-ad" aria-label="広告"></div>
     <div id="stageLoading" class="stage-loading" aria-live="polite" aria-hidden="true">
@@ -2142,12 +2226,15 @@
   </div>
 
   <div id="hintAdModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="hintAdTitle">
-    <div class="modal-box">
+    <div class="modal-box ad-modal-box">
       <h2 id="hintAdTitle">広告</h2>
       <p>広告のあとにヒントを見られます。</p>
       <div id="hintCountdown" class="hint-countdown">5</div>
+      <div id="hintVideoAdSlot" class="ad-slot video-ad-slot" aria-label="動画広告"></div>
       <div id="hintAdSlot" class="ad-slot" aria-label="ヒント広告"></div>
       <div id="hintInstantAdSlot" class="ad-slot" aria-label="インスタント広告"></div>
+      <div id="hintInstantAdSlot2" class="ad-slot" aria-label="インスタント広告2"></div>
+      <div id="hintInstantAdSlot3" class="ad-slot" aria-label="インスタント広告3"></div>
     </div>
   </div>
 
@@ -2206,10 +2293,11 @@
   </div>
 
   <div id="recoverAdModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="recoverAdTitle">
-    <div class="modal-box">
+    <div class="modal-box ad-modal-box">
       <h2 id="recoverAdTitle">回復広告</h2>
       <p>広告のあとにライフが全回復します。</p>
       <div id="recoverCountdown" class="hint-countdown">20</div>
+      <div id="recoverVideoAdSlot" class="ad-slot video-ad-slot" aria-label="回復用動画広告"></div>
       <div id="recoverAdSlot" class="ad-slot" aria-label="回復広告"></div>
       <div id="recoverInstantAdSlot" class="ad-slot" aria-label="回復用インスタント広告"></div>
       <div id="recoverInstantAdSlot2" class="ad-slot" aria-label="回復用インスタント広告2"></div>
@@ -2258,7 +2346,7 @@
     ];
     const legacyStageOffset = 10;
     const legacyStageCount = 21;
-    const normalStageCount = 100;
+    const normalStageCount = 150;
     const exStageCount = 5;
     const stagePlan = [
       ...[3,3,3,3,3,3,2,2,2,2].map(regionCount => ({ size: 4, regionCount })),
@@ -2269,6 +2357,11 @@
       ...[16,15,15,14,13,12,11,10,9,8,7,7,6,5,5].map(regionCount => ({ size: 9, regionCount })),
       ...[20,18,17,16,15,14,13,12,10,9,8,7,6,5].map(regionCount => ({ size: 10, regionCount })),
       ...[22,20,18,16,14,12].map(regionCount => ({ size: 11, regionCount })),
+      ...[8,8,7,7,6,6,5,5,4,4].map(regionCount => ({ size: 6, regionCount })),
+      ...[10,10,9,9,8,8,7,6,5,4].map(regionCount => ({ size: 7, regionCount })),
+      ...[13,12,11,10,9,8,7,6,5,4].map(regionCount => ({ size: 8, regionCount })),
+      ...[17,16,15,14,12,10,9,8,7,6].map(regionCount => ({ size: 9, regionCount })),
+      ...[22,20,18,16,14,12,10,8,7,6].map(regionCount => ({ size: 10, regionCount })),
       { size: 12, regionCount: 28, ex: 1 },
       { size: 14, regionCount: 36, ex: 2 },
       { size: 16, regionCount: 46, ex: 3 },
@@ -2276,11 +2369,18 @@
       { size: 20, regionCount: 45, ex: 5 }
     ];
     const sizes = stagePlan.map(stage => stage.size);
-    const playableNormalImages = 100;
+    const knownNormalImageCount = 100;
+    const availableNormalImages = new Set(Array.from({ length: knownNormalImageCount }, (_, index) => index + 1));
     const availableExImages = new Set([1, 2, 3, 4, 5]);
     const stageImagePaths = stagePlan.map((stage, index) =>
       stage.ex ? `assets/tetesum/EX${stage.ex}.jpg` : `assets/tetesum/${index + 1}.jpg`
     );
+    const stageTabRanges = [
+      { id: "main", label: "1〜100", start: 0, end: 100 },
+      { id: "extra", label: "101〜150", start: 100, end: 150 },
+      { id: "ex", label: "EX", start: normalStageCount, end: stagePlan.length }
+    ];
+    let activeStageTab = "main";
     const ambientExtraImages = Array.from({ length: 10 }, (_, index) => `assets/tetesum/${index + 1}.jpg`);
 
     const stageCache = Array(sizes.length).fill(null);
@@ -2316,6 +2416,7 @@
     const stageScreen = document.getElementById("stageScreen");
     const gameScreen = document.getElementById("gameScreen");
     const stageGrid = document.getElementById("stageGrid");
+    const stageTabs = document.getElementById("stageTabs");
     const titleAdSlot = document.getElementById("titleAdSlot");
     const stageAdSlot = document.getElementById("stageAdSlot");
     const boardWrap = document.querySelector(".board-wrap");
@@ -2332,11 +2433,15 @@
     const hintConfirmModal = document.getElementById("hintConfirmModal");
     const stageLoading = document.getElementById("stageLoading");
     const hintAdModal = document.getElementById("hintAdModal");
+    const hintVideoAdSlot = document.getElementById("hintVideoAdSlot");
     const hintAdSlot = document.getElementById("hintAdSlot");
     const hintInstantAdSlot = document.getElementById("hintInstantAdSlot");
+    const hintInstantAdSlot2 = document.getElementById("hintInstantAdSlot2");
+    const hintInstantAdSlot3 = document.getElementById("hintInstantAdSlot3");
     const hintCountdown = document.getElementById("hintCountdown");
     const gameOverModal = document.getElementById("gameOverModal");
     const recoverAdModal = document.getElementById("recoverAdModal");
+    const recoverVideoAdSlot = document.getElementById("recoverVideoAdSlot");
     const recoverAdSlot = document.getElementById("recoverAdSlot");
     const recoverInstantAdSlot = document.getElementById("recoverInstantAdSlot");
     const recoverInstantAdSlot2 = document.getElementById("recoverInstantAdSlot2");
@@ -2360,11 +2465,13 @@
     const galleryViewerHintClose = document.getElementById("galleryViewerHintClose");
     const storageKey = "sumAreaPuzzleCompletedStages";
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
+    const stageExpansionMigrationKey = "sumAreaPuzzleStageExpansionV150";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
     const standardAdProviderSrc = "https://a.magsrv.com/ad-provider.js";
     const standardAdClassName = "eas6a97888e2";
     const standardAdZoneId = "5932240";
+    const wideBannerAdZoneId = "5932518";
     const hintAdProviderSrc = "https://a.pemsrv.com/ad-provider.js";
     const hintAdClassName = "eas6a97888e33";
     const hintAdZoneId = "5932074";
@@ -2372,6 +2479,9 @@
     const desktopHintAdZoneId = "5932242";
     const instantAdClassName = "eas6a97888e6";
     const instantAdZoneId = "5931976";
+    const instantAdZoneId2 = "5932508";
+    const videoAdClassName = "eas6a97888e37";
+    const videoAdZoneId = "5932308";
     const settings = loadSettings();
     const completedStages = loadCompletedStages();
     const ambientBaseImages = ambientExtraImages;
@@ -2478,7 +2588,29 @@
       const plan = stagePlan[index];
       if (!plan) return false;
       if (plan.ex) return availableExImages.has(plan.ex);
-      return index < playableNormalImages;
+      return availableNormalImages.has(index + 1);
+    }
+
+    function probeImage(path) {
+      return new Promise(resolve => {
+        const image = new Image();
+        image.onload = () => resolve(true);
+        image.onerror = () => resolve(false);
+        image.src = `${path}?probe=${Date.now()}`;
+      });
+    }
+
+    async function probeAdditionalStageImages() {
+      const checks = [];
+      for (let number = knownNormalImageCount + 1; number <= normalStageCount; number++) {
+        checks.push(
+          probeImage(`assets/tetesum/${number}.jpg`).then(exists => {
+            if (exists) availableNormalImages.add(number);
+          })
+        );
+      }
+      await Promise.all(checks);
+      renderStageCards();
     }
 
     function makeStage(size, index) {
@@ -3596,7 +3728,11 @@
       stageScreen.classList.toggle("active", name === "stage");
       gameScreen.classList.toggle("active", name === "game");
       if (name === "title") renderStandardAd(titleAdSlot);
-      if (name === "stage") renderStandardAd(stageAdSlot);
+      if (name === "stage") {
+        renderStageTabs();
+        renderStageCards();
+        renderStandardAd(stageAdSlot);
+      }
     }
 
     function getTutorialRegionCells(id) {
@@ -4288,6 +4424,7 @@
       recoverAdModal.classList.add("active");
       let remaining = 20;
       recoverCountdown.textContent = String(remaining);
+      renderVideoAd(recoverVideoAdSlot);
       renderAdIntoSlot(recoverAdSlot, standardAdClassName, standardAdZoneId, standardAdProviderSrc, true);
       renderAdIntoSlot(recoverInstantAdSlot, instantAdClassName, instantAdZoneId, standardAdProviderSrc, true);
       renderAdIntoSlot(recoverInstantAdSlot2, instantAdClassName, instantAdZoneId, standardAdProviderSrc, true);
@@ -4408,6 +4545,14 @@
             .map(index => index + legacyStageOffset);
           localStorage.setItem(storageKey, JSON.stringify([...new Set(migrated)].sort((a, b) => a - b)));
           localStorage.setItem(stageMigrationKey, "done");
+          return new Set(migrated);
+        }
+        if (localStorage.getItem(stageExpansionMigrationKey) !== "done") {
+          const migrated = list
+            .filter(index => Number.isInteger(index) && index >= 0 && index < 105)
+            .map(index => index >= 100 ? index + 50 : index);
+          localStorage.setItem(storageKey, JSON.stringify([...new Set(migrated)].sort((a, b) => a - b)));
+          localStorage.setItem(stageExpansionMigrationKey, "done");
           return new Set(migrated);
         }
         return new Set(list);
@@ -4533,9 +4678,27 @@
       return;
     }
 
+    function renderStageTabs() {
+      stageTabs.innerHTML = "";
+      stageTabRanges.forEach(range => {
+        const button = document.createElement("button");
+        button.className = `stage-tab ${activeStageTab === range.id ? "active" : ""}`;
+        button.type = "button";
+        button.textContent = range.label;
+        button.addEventListener("click", () => {
+          activeStageTab = range.id;
+          renderStageTabs();
+          renderStageCards();
+        });
+        stageTabs.append(button);
+      });
+    }
+
     function renderStageCards() {
       stageGrid.innerHTML = "";
+      const range = stageTabRanges.find(item => item.id === activeStageTab) || stageTabRanges[0];
       sizes.forEach((_, index) => {
+        if (index < range.start || index >= range.end) return;
         const stage = makeStagePreview(index);
         const regionCount = stage.regionCount;
         const playable = stageHasImage(index);
@@ -4638,10 +4801,18 @@
       hintAdStageIndex = state.stageIndex;
       hintConfirmModal.classList.remove("active");
       hintAdModal.classList.add("active");
-      let remaining = 5;
-      hintCountdown.textContent = String(remaining);
+      hintCountdown.textContent = "広告読み込み中";
       renderHintAd();
       clearInterval(hintAdTimer);
+      clearTimeout(hintAnimationTimer);
+      hintAnimationTimer = setTimeout(startHintCountdownAfterAd, 900);
+    }
+
+    function startHintCountdownAfterAd() {
+      hintAnimationTimer = null;
+      if (!hintAdModal.classList.contains("active")) return;
+      let remaining = 5;
+      hintCountdown.textContent = String(remaining);
       hintAdTimer = setInterval(() => {
         remaining -= 1;
         hintCountdown.textContent = String(Math.max(0, remaining));
@@ -4669,6 +4840,7 @@
 
     function renderHintAd() {
       const hintZone = getHintAdZone();
+      renderVideoAd(hintVideoAdSlot);
       hintAdSlot.innerHTML = "";
       const ins = document.createElement("ins");
       ins.className = hintZone.className;
@@ -4676,6 +4848,12 @@
       hintAdSlot.append(ins);
       requestAdServe(hintAdProviderSrc);
       renderAdIntoSlot(hintInstantAdSlot, instantAdClassName, instantAdZoneId, standardAdProviderSrc, true);
+      renderAdIntoSlot(hintInstantAdSlot2, instantAdClassName, instantAdZoneId2, standardAdProviderSrc, true);
+      renderAdIntoSlot(hintInstantAdSlot3, standardAdClassName, wideBannerAdZoneId, standardAdProviderSrc, true);
+    }
+
+    function renderVideoAd(slot) {
+      renderAdIntoSlot(slot, videoAdClassName, videoAdZoneId, standardAdProviderSrc, true);
     }
 
     function renderStandardAd(slot) {
@@ -4776,10 +4954,18 @@
       event.stopPropagation();
       closeGalleryViewer();
     });
-    galleryViewerHintClose.addEventListener("click", event => {
+    function hideGalleryHint(event) {
       event.stopPropagation();
       galleryHintHidden = true;
       galleryViewerHint.classList.add("hidden");
+    }
+    galleryViewerHintClose.addEventListener("click", hideGalleryHint);
+    galleryViewerHintClose.addEventListener("pointerup", hideGalleryHint);
+    galleryViewerHintClose.addEventListener("pointerdown", event => {
+      event.stopPropagation();
+    });
+    galleryViewerHint.addEventListener("pointerdown", event => {
+      event.stopPropagation();
     });
     galleryViewer.addEventListener("dblclick", event => {
       event.preventDefault();
@@ -4796,7 +4982,7 @@
       applyGalleryTransform();
     }, { passive: false });
     galleryViewer.addEventListener("pointerdown", event => {
-      if (!galleryViewer.classList.contains("active") || event.target === galleryViewerClose) return;
+      if (!galleryViewer.classList.contains("active") || event.target === galleryViewerClose || event.target.closest("#galleryViewerHint")) return;
       event.preventDefault();
       galleryViewer.setPointerCapture?.(event.pointerId);
       galleryPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -4936,7 +5122,9 @@
     }
 
     updateAmbientImage();
+    renderStageTabs();
     renderStageCards();
+    probeAdditionalStageImages();
     renderStandardAd(titleAdSlot);
     prepareHintAds();
     showAgeGateIfNeeded();
