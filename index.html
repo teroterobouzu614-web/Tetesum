@@ -915,6 +915,7 @@
     .stage-card.stage-size-14 { background: linear-gradient(180deg, #fff, #f8e8f3 64%, #edbbdc); }
     .stage-card.stage-size-15 { background: linear-gradient(180deg, #fff, #fff0dd 64%, #f5cf9d); }
     .stage-card.stage-size-16 { background: linear-gradient(180deg, #fff, #e7f0ff 64%, #bdd3ff); }
+    .stage-card.stage-size-18 { background: linear-gradient(180deg, #fff, #eef7ff 64%, #c9e3f8); }
     .stage-card.stage-size-20 { background: linear-gradient(180deg, #fff, #f0eadf 64%, #d9c8aa); }
 
     .stage-card.ex-stage {
@@ -2346,8 +2347,8 @@
     ];
     const legacyStageOffset = 10;
     const legacyStageCount = 21;
-    const normalStageCount = 150;
-    const exStageCount = 5;
+    const normalStageCount = 200;
+    const exStageCount = 10;
     const stagePlan = [
       ...[3,3,3,3,3,3,2,2,2,2].map(regionCount => ({ size: 4, regionCount })),
       ...[5,5,5,5,4,4,4,4,3,3,3,3].map(regionCount => ({ size: 5, regionCount })),
@@ -2362,22 +2363,32 @@
       ...[13,12,11,10,9,8,7,6,5,4].map(regionCount => ({ size: 8, regionCount })),
       ...[17,16,15,14,12,10,9,8,7,6].map(regionCount => ({ size: 9, regionCount })),
       ...[22,20,18,16,14,12,10,8,7,6].map(regionCount => ({ size: 10, regionCount })),
+      ...[26,24,22,20,18,16,14,12,10,8].map(regionCount => ({ size: 11, regionCount })),
+      ...[30,28,26,24,22,20,18,16,14,12].map(regionCount => ({ size: 12, regionCount })),
+      ...[36,34,32,30,28,25,22,19,16,13].map(regionCount => ({ size: 13, regionCount })),
+      ...[42,40,37,34,31,28,24,20,16,12].map(regionCount => ({ size: 14, regionCount })),
+      ...[48,45,42,38,34,30,26,22,18,14].map(regionCount => ({ size: 15, regionCount })),
       { size: 12, regionCount: 28, ex: 1 },
       { size: 14, regionCount: 36, ex: 2 },
       { size: 16, regionCount: 46, ex: 3 },
       { size: 20, regionCount: 70, ex: 4 },
-      { size: 20, regionCount: 45, ex: 5 }
+      { size: 20, regionCount: 45, ex: 5 },
+      { size: 12, regionCount: 24, ex: 6 },
+      { size: 14, regionCount: 32, ex: 7 },
+      { size: 16, regionCount: 40, ex: 8 },
+      { size: 18, regionCount: 52, ex: 9 },
+      { size: 20, regionCount: 60, ex: 10 }
     ];
     const sizes = stagePlan.map(stage => stage.size);
     const knownNormalImageCount = 100;
     const availableNormalImages = new Set(Array.from({ length: knownNormalImageCount }, (_, index) => index + 1));
-    const availableExImages = new Set([1, 2, 3, 4, 5]);
-    const stageImagePaths = stagePlan.map((stage, index) =>
-      stage.ex ? `assets/tetesum/EX${stage.ex}.jpg` : `assets/tetesum/${index + 1}.jpg`
-    );
+    const availableExImages = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    const pngStageImages = new Set([12, 13, 26, 54, 131, 151]);
+    const stageImagePaths = stagePlan.map((stage, index) => makeStageImagePath(index, stage));
     const stageTabRanges = [
       { id: "main", label: "1〜100", start: 0, end: 100 },
       { id: "extra", label: "101〜150", start: 100, end: 150 },
+      { id: "extra2", label: "151〜200", start: 150, end: 200 },
       { id: "ex", label: "EX", start: normalStageCount, end: stagePlan.length }
     ];
     let activeStageTab = "main";
@@ -2466,6 +2477,7 @@
     const storageKey = "sumAreaPuzzleCompletedStages";
     const stageMigrationKey = "sumAreaPuzzleStageOffsetV2";
     const stageExpansionMigrationKey = "sumAreaPuzzleStageExpansionV150";
+    const stageExpansion200MigrationKey = "sumAreaPuzzleStageExpansionV200";
     const settingsKey = "sumAreaPuzzleSettings";
     const ageGateKey = "tetesumAgeConfirmed";
     const standardAdProviderSrc = "https://a.magsrv.com/ad-provider.js";
@@ -2584,6 +2596,12 @@
       return index;
     }
 
+    function makeStageImagePath(index, plan = stagePlan[index]) {
+      if (plan?.ex) return `assets/tetesum/EX${plan.ex}.jpg`;
+      const number = index + 1;
+      return `assets/tetesum/${number}.${pngStageImages.has(number) ? "png" : "jpg"}`;
+    }
+
     function stageHasImage(index) {
       const plan = stagePlan[index];
       if (!plan) return false;
@@ -2600,11 +2618,19 @@
       });
     }
 
+    async function probeAnyImage(paths) {
+      const results = await Promise.all(paths.map(path => probeImage(path)));
+      return results.some(Boolean);
+    }
+
     async function probeAdditionalStageImages() {
       const checks = [];
       for (let number = knownNormalImageCount + 1; number <= normalStageCount; number++) {
         checks.push(
-          probeImage(`assets/tetesum/${number}.jpg`).then(exists => {
+          probeAnyImage([
+            `assets/tetesum/${number}.jpg`,
+            `assets/tetesum/${number}.png`
+          ]).then(exists => {
             if (exists) availableNormalImages.add(number);
           })
         );
@@ -4553,6 +4579,14 @@
             .map(index => index >= 100 ? index + 50 : index);
           localStorage.setItem(storageKey, JSON.stringify([...new Set(migrated)].sort((a, b) => a - b)));
           localStorage.setItem(stageExpansionMigrationKey, "done");
+          return new Set(migrated);
+        }
+        if (localStorage.getItem(stageExpansion200MigrationKey) !== "done") {
+          const migrated = list
+            .filter(index => Number.isInteger(index) && index >= 0 && index < 155)
+            .map(index => index >= 150 ? index + 50 : index);
+          localStorage.setItem(storageKey, JSON.stringify([...new Set(migrated)].sort((a, b) => a - b)));
+          localStorage.setItem(stageExpansion200MigrationKey, "done");
           return new Set(migrated);
         }
         return new Set(list);
